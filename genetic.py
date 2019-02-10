@@ -2,6 +2,10 @@ import numpy as np
 import random
 
 def crossover (population, p_crossover, c):
+    '''
+    aaa
+    '''
+
     size_pop = population.shape[0]
 
     indices = np.argwhere(
