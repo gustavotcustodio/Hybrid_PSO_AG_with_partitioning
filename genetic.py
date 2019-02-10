@@ -3,7 +3,7 @@ import random
 
 def crossover (population, p_crossover, c):
     '''
-    aaa
+    
     '''
 
     size_pop = population.shape[0]
@@ -26,3 +26,6 @@ def crossover (population, p_crossover, c):
         cross_pop[i[1]] = c * cross_pop[i[1]] + (1 - c) * cross_pop[i[0]]
 
     return cross_pop
+
+def mutation ():
+    return None
