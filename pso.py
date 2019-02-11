@@ -83,6 +83,9 @@ def generate_velocities (n_particles, n_dimensions, l_bound, u_bound):
 
 
 def eval_particle (fitness, particle):
+    '''
+    Evaluate a particle using a fitness function.
+    '''
     return fitness (particle)
 
 
@@ -91,6 +94,9 @@ def copy_particle (particle):
 
 
 def get_best_particle (particles, evals_p):
+    '''
+    Get the particle with best evaluation.
+    '''
     i_max = np.argmax (evals_p)
     return particles [i_max]
 
@@ -107,16 +113,47 @@ def update_velocity (x_i, p_i, g, v_i, consts):
 def update_position (position, velocity):
     '''
     Update the position of a particle in the space
-    acoording to its velocity.
+    acording to its velocity.
 
     Parameters
     ----------
-    position:
+    position: 1d array
+        Position of a PSO particle in the space.
+    velocity: 1d array
+        Velocity of a PSO particle.
     '''
     return position + velocity
 
 
 def update_best (x_i, p_i, g, fx_i, fp_i, fg):
+    '''
+    Update the best known position p_i of a particle
+    and the best global solution g.
+
+    If the position x_i of a particle is better than p_i, update p_i.
+    If the position x_i of a particle is better than g, update g.
+
+    Parameters
+    ---------
+    x_i: 1d array
+        Position of a particle i.
+    p_i: 1d array
+        Best solution found by particle i.
+    g: 1d array
+        Best global solution.
+    fx_i, fp_i, g: float
+        Evaluation of particle position 
+        x_i, best solution p_i and global solution g.
+
+    Returns
+    -------
+    x_i, x_i, fx_i, fx_i
+        If the position x_i is better than p_i and g.
+    x_i, g, fx_i, fg
+        If the position x_i is better than p_i, but not g.
+    p_i, g, fp_i, fg
+        If the position x_i is better than none.
+    '''
     if fx_i > fp_i:
         if fx_i > fg:
             return copy_particle(x_i), copy_particle(x_i), fx_i, fx_i
@@ -125,6 +162,24 @@ def update_best (x_i, p_i, g, fx_i, fp_i, fg):
 
 
 def split_particles (particles, n_subpops, n_subspaces):
+    '''
+    Split all PSO particles in partitions according to the
+    proposal by ***.
+
+    Attributes
+    ----------
+    particles: 2d array
+        All PSO particles.
+    n_subpops: int
+        Number of groups which the particles are divided.
+    n_subspaces: int
+        Number of parts to split each particle.
+
+    Returns
+    -------
+    partitions: 3d array [partition, particle, particle_slice]
+        PSO particles splitted in different partitions.
+    '''
     n = particles.shape[0] / n_subpops
     m = particles.shape[1] / n_subspaces
 
@@ -138,6 +193,7 @@ def split_particles (particles, n_subpops, n_subspaces):
 
  
 def merge_particles (particles, n_parts, n_dims):
+    
     n_subpops     = n_parts / particles.shape[1]
     n_subspaces   = n_dims /  particles.shape[2]
     n_parts_block = particles.shape[1]
