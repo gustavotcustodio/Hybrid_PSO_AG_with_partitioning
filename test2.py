@@ -14,7 +14,7 @@ class TestGA (unittest.TestCase):
 
         np.testing.assert_allclose (
             genetic.crossover (population, p_crossover, c), population, atol=1.0
-        )  
+        )
 
 
 if __name__ == '__main__':

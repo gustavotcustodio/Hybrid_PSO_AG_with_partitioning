@@ -2,17 +2,76 @@ import numpy as np
 
 
 def generate_single_array (n_dimensions, l_bound, u_bound):
+    '''
+    Generates a single array with float values ranging from
+    l_bound to u_bound
+
+    Parameters
+    ----------
+    n_dimensions: int
+        Number of array dimensions.
+    l_bound: float
+        Min value allowed for a position in the array.
+    u_bound: float
+        Max value allowed for a position in the array.
+
+    Returns
+    -------
+    single_array: 1d array
+    '''
     return np.random.uniform (l_bound, u_bound, n_dimensions)
 
 
 def generate_particles (n_particles, n_dimensions, l_bound, u_bound):
+    '''
+    Generate the initial set of particle positions in a PSO.
+
+    Parameters
+    ----------
+    n_particles: int
+        Number of particles.
+    n_dimensions: int
+        Size of each particle.
+    l_bound: float
+        Min value allowed for the position of a particle in space.
+    u_bound: float
+        Max value allowed for the position of a particle in space.
+
+    Returns
+    -------
+    particles: 2d array
+        Array containing initial particle positions in a PSO.
+    '''
     particles = np.array(
         [generate_single_array (n_dimensions, l_bound, u_bound)
-        for _ in range(n_particles)]) 
+        for _ in range(n_particles)]
+    ) 
     return particles
 
 
 def generate_velocities (n_particles, n_dimensions, l_bound, u_bound):
+    '''
+    Generate an array of arrays containing the initial velocities
+    for all PSO particles.
+
+    Parameters
+    ----------
+    n_particles: int
+        Number of particles.
+    n_dimensions: int
+        Number of dimensions for each particle.
+    l_bound: float
+        Min value allowed for the position of a particle in space,
+        used to calculate the min and max velocity.
+    u_bound: float
+        Max value allowed for the position of a particle in space,
+        used to calculate the min and max velocity.
+
+    Returns
+    -------
+    velocities: 2d array
+        Initial velocities for all PSO particles.
+    '''
     u_bound_vel = abs(u_bound - l_bound)
     l_bound_vel = -u_bound_vel
 
@@ -45,8 +104,16 @@ def update_velocity (x_i, p_i, g, v_i, consts):
     return consts[0]*v_i + r1*consts[1]*(p_i-x_i) + r2*consts[2]*(g-x_i)
 
 
-def update_position (particle, velocity):
-    return particle + velocity
+def update_position (position, velocity):
+    '''
+    Update the position of a particle in the space
+    acoording to its velocity.
+
+    Parameters
+    ----------
+    position:
+    '''
+    return position + velocity
 
 
 def update_best (x_i, p_i, g, fx_i, fp_i, fg):
