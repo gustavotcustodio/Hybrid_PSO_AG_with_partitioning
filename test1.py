@@ -12,19 +12,24 @@ class TestPSO (unittest.TestCase):
             pso.generate_single_array (5, 0.0, 1.0), array_test, atol=1.0
         )        
  
-
     def test_generate_particles (self):
-        self.assertEqual (pso.generate_particles(100, 10, 0, 1).shape[0], 100)
+        particles  = pso.generate_particles(100, 10, 0, 1)
+        condition1 = particles.shape == (100,10)
+        condition2 = (particles <= 1).all() and (particles >= 0).all()
 
+        self.assertTrue (condition1 and condition2)
 
     def test_generate_velocities (self):
-        self.assertEqual (pso.generate_particles(100, 10, 0, 1).shape[0], 100)
-    
+        velocities  = pso.generate_velocities(100, 10, 0, 1)
+        condition1 = velocities.shape == (100,10)
+        condition2 = (velocities <= 1).all() and (velocities >= -1).all()
+
+        self.assertTrue (condition1 and condition2)
 
     def test_evaluate_particle (self):
         particle = np.array ([1.0, 0.8, 0.2, 0.4])
         fitness = lambda p: np.sum (p ** 2)
-        self.assertAlmostEqual (pso.eval_particle (fitness, particle), 1.84 )
+        self.assertAlmostEqual (pso.evaluate_particle (fitness, particle), 1.84 )
 
 
     def test_copy_particle (self):
@@ -41,7 +46,6 @@ class TestPSO (unittest.TestCase):
             pso.get_best_particle (particles, f_values), particles[2]
         )
 
-
     def test_update_position (self):
         x = np.array([ 0.6, 0.2,-0.2])
         v = np.array([-0.5, 0.4, 0.5])
@@ -51,20 +55,8 @@ class TestPSO (unittest.TestCase):
         np.testing.assert_array_almost_equal (
             pso.update_position (x, v), x_final)
 
-    
-    #def test_update_velocity (self):
-    #    x = np.array([ 0.6, 0.2, 0.4])
-    #    p = np.array([ 0.4, 0.8, 0.9])
-    #    g = np.array([ 0.3, 0.1, 0.1])
-    #    v = np.array([-0.2, 0.3, 0.5])
-
-    #    c = [0.5, 1.0, 0.2]
-
-    #    final_velocity = np.array([0.0])
-
-    #    np.testing.assert_array_equal (
-    #        pso.update_velocity (x, p, g, v, c), final_velocity)
-
+    #def test_update_velocities (self):
+        
 
     def test_update_best (self):
         x = np.array([ 0.6, 0.2, 0.4]) #0.56
@@ -78,36 +70,6 @@ class TestPSO (unittest.TestCase):
         g_final = np.array([ 0.6, 0.2, 0.4])
 
         np.testing.assert_array_equal (g, g_final)
-
-
-    def test_split_particles (self):
-        n_subpops = 2
-        n_subspaces = 4
-        
-        particles = np.array( [[0.6, 0.2, 0.4, 0.5], [0.4, 0.2, 0.1, 0.3], 
-                               [0.3, 0.1, 0.2, 0.4], [0.4, 0.3, 0.2, 0.1]] )
-
-        split_result = pso.split_particles (particles, n_subpops, n_subspaces)
-
-        split_expected = np.array( [[[0.6], [0.4]], [[0.2], [0.2]],
-                                    [[0.4], [0.1]], [[0.5], [0.3]], 
-                                    [[0.3], [0.4]], [[0.1], [0.3]],
-                                    [[0.2], [0.2]], [[0.4], [0.1]]] )
-
-        np.testing.assert_array_equal (split_result, split_expected)
-    
-
-    def test_merge_blocks (self):
-        split_particles = np.array([[[0.6], [0.4]], [[0.2], [0.2]],
-                                    [[0.4], [0.1]], [[0.5], [0.3]], 
-                                    [[0.3], [0.4]], [[0.1], [0.3]],
-                                    [[0.2], [0.2]], [[0.4], [0.1]]] )
-  
-        merged_particles = np.array( [[0.6, 0.2, 0.4, 0.5], [0.4, 0.2, 0.1, 0.3],
-                               [0.3, 0.1, 0.2, 0.4], [0.4, 0.3, 0.2, 0.1]] )
-
-        np.testing.assert_array_equal (
-            pso.merge_particles (split_particles, 4, 4), merged_particles)
 
 
     def test_run_pso (self):

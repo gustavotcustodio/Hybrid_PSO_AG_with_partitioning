@@ -89,7 +89,6 @@ def evaluate_particle (fitness, particle):
 def copy_particle (particle):
     return np.copy (particle)
 
-
 def get_best_particle (particles, evals_parts):
     '''
     Get the particle with best evaluation.
@@ -97,24 +96,32 @@ def get_best_particle (particles, evals_parts):
     i_max = np.argmax (evals_parts)
     return particles [i_max]
 
-
-def update_velocities (particles, best_parts, g, velocities, consts):
+def update_velocities (particles, best_parts, global_best, 
+                                        velocities, consts):
     '''
+    Parameters
+    ----------
+    particles: 2d array
 
+    best_parts: 2d array
+    global_best: 1d array
+    velocities: 2d array
+    const: list [float]
     '''
     pop_size = particles.shape[0]
     particle_size = particles.shape[1]
 
     # Matrices of random numbers
-    r1 = np.random.uniform (0, 1, particle_size)
-    r2 = np.random.uniform (0, 1, particle_size)
-        
-    xi, pi, vi = particles[i], best_parts[i], velocities[i]
+    r1 = np.random.uniform (0, 1, (pop_size, particle_size))
+    r2 = np.random.uniform (0, 1, (pop_size, particle_size))
 
-    return consts[0] * vi + r1 * consts[1] * (
-                            pi-xi) + r2 * consts[2] * (g-xi)
+    # tranform the global best solution in a 2d array,
+    # repeating the array in each row
+    g = np.tile (global_best, (pop_size, 1))
 
-    
+    return           (consts[0] * velocities
+            ) + (r1 * consts[1] * (best_parts-particles)
+            ) + (r2 * consts[2] * (global_best-particles))
 
 def update_position (position, velocity):
     '''
@@ -255,8 +262,8 @@ if __name__ == '__main__':
     selection = selection.reshape( selection.shape[0]/2, 2)
 
     for i in selection:
-        print i[0]
-        print i[1]
+        print (i[0])
+        print (i[1])
 
     n_particles = 6
     n_dims = 4
@@ -265,8 +272,7 @@ if __name__ == '__main__':
     consts = [0.7, 1.4, 1.4]
     fitness = lambda x: np.sum(x**2)
 
-
     g, res = run_pso (n_particles, n_dims, n_subpops, 
                     n_subspaces, consts, fitness)
 
-    print res
+    print (res)
