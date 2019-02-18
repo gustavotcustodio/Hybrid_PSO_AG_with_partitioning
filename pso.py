@@ -123,19 +123,19 @@ def update_velocities (particles, best_parts, global_best,
             ) + (r1 * consts[1] * (best_parts-particles)
             ) + (r2 * consts[2] * (global_best-particles))
 
-def update_position (position, velocity):
+def update_positions (positions, velocities):
     '''
     Update the position of a particle in the space
     acording to its velocity.
 
     Parameters
     ----------
-    position: 1d array
-        Position of a PSO particle in the space.
-    velocity: 1d array
-        Velocity of a PSO particle.
+    position: 2d array
+        Positions of PSO particles in the space.
+    velocity: 2d array
+        Velocities of PSO particles.
     '''
-    return position + velocity
+    return positions + velocities
 
 def update_best (x_i, p_i, g, fx_i, fp_i, fg):
     '''
@@ -245,7 +245,7 @@ def run_pso (n_particles, n_dims, n_subpops, n_subspaces,
         
         update_velocities (particles[i], best_parts[i], g, velocities[i], consts)
 
-        particles[i] = update_position (particles[i], velocities[i])
+        particles[i] = update_positions (particles[i], velocities[i])
         evals_parts[i] = fitness (particles[i])
 
         best_parts[i], g, evals_best[i], eval_g = update_best (

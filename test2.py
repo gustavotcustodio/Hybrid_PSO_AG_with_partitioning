@@ -16,6 +16,5 @@ class TestGA (unittest.TestCase):
             genetic.crossover (population, p_crossover, c), population, atol=1.0
         )
 
-
 if __name__ == '__main__':
     unittest.main()
