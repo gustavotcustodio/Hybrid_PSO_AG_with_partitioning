@@ -115,13 +115,13 @@ def update_velocities (particles, best_parts, global_best,
     r1 = np.random.uniform (0, 1, (pop_size, particle_size))
     r2 = np.random.uniform (0, 1, (pop_size, particle_size))
 
-    # tranform the global best solution in a 2d array,
-    # repeating the array in each row
-    g = np.tile (global_best, (pop_size, 1))
+    # Tranform the global best solution in a 2d array,
+    # repeating the array containing the global solution in each row
+    mat_global_best = np.tile (global_best, (pop_size, 1))
 
     return           (consts[0] * velocities
             ) + (r1 * consts[1] * (best_parts-particles)
-            ) + (r2 * consts[2] * (global_best-particles))
+            ) + (r2 * consts[2] * (mat_global_best-particles))
 
 def update_positions (positions, velocities):
     '''
@@ -130,47 +130,66 @@ def update_positions (positions, velocities):
 
     Parameters
     ----------
-    position: 2d array
+    positions: 2d array
         Positions of PSO particles in the space.
-    velocity: 2d array
+    velocities: 2d array
         Velocities of PSO particles.
     '''
     return positions + velocities
 
-def update_best (x_i, p_i, g, fx_i, fp_i, fg):
+def update_best_solutions (positions, best_parts, f_pos, f_best):
     '''
-    Update the best known position p_i of a particle
-    and the best global solution g.
+    Update the best known positions of PSO particles with the
+    new best positions found.
 
     If the position x_i of a particle is better than p_i, update p_i.
-    If the position x_i of a particle is better than g, update g.
+    Repeat that for all particles.
 
     Parameters
-    ---------
-    x_i: 1d array
-        Position of a particle i.
-    p_i: 1d array
-        Best solution found by particle i.
-    g: 1d array
-        Best global solution.
-    fx_i, fp_i, g: float
-        Evaluation of particle position 
-        x_i, best solution p_i and global solution g.
+    ----------
+    positions: 2d array
+        Positions of PSO particles in space.
+    f_pos: 1d array
+        Evaluations of particles according to their positions.
+    f_best: 1d array
+        Evaluations of best solutions found by particles.
+    '''
+    # Indices where the particles have better evaluation than the current best.
+    indices_better = np.where (f_pos > f_best)[0]
+    
+    best_parts [indices_better] = np.copy (positions [indices_better])
+    f_best [indices_better] = np.copy (f_pos [indices_better])
+
+    return best_parts
+
+def update_global_best (positions, global_best, f_pos, fg):
+    '''
+    Update the best known global solution, if a better particle is found.
+
+    Parameters
+    ----------
+    positions: 2d array
+        Positions of PSO particles in space.
+    global_best: 1d array
+        Best solution found so far by the PSO.
+    f_pos: 1d array
+        Evaluations of particles according to their positions.
+    fg: float
+        Evaluation of the best global solution.
 
     Returns
     -------
-    x_i, x_i, fx_i, fx_i
-        If the position x_i is better than p_i and g.
-    x_i, g, fx_i, fg
-        If the position x_i is better than p_i, but not g.
-    p_i, g, fp_i, fg
-        If the position x_i is better than none.
+    new_global_best: 1d array
+        Returns the same global_solution if no other best solution is found,
+        otherwise replace the current global_solution with the best particle.
+    new_fg: float
+        New evaluation value of the global solution.
     '''
-    if fx_i > fp_i:
-        if fx_i > fg:
-            return copy_particle(x_i), copy_particle(x_i), fx_i, fx_i
-        return copy_particle(x_i), g, fx_i, fg
-    return p_i, g, fp_i, fg
+    index_best = np.argmax (f_pos)
+
+    if f_pos [index_best] > fg:
+        return np.copy( positions[index_best] ), f_pos[index_best]
+    return global_best, fg
 
 
 def split_particles (particles, n_subpops, n_subspaces):
@@ -189,19 +208,11 @@ def split_particles (particles, n_subpops, n_subspaces):
 
     Returns
     -------
-    partitions: 3d array [partition, particle, particle_slice]
-        PSO particles splitted in different partitions.
+    partitions: 2d array
+        
     '''
-    n = particles.shape[0] / n_subpops
-    m = particles.shape[1] / n_subspaces
-
-    part_split = []
-
-    for i in range(0, particles.shape[0], n):
-        for j in range(0, particles.shape[1], m):
-            part_split.append ( particles[i:i+n, j:j+m] )
-
-    return np.array (part_split)
+    
+    return None
 
  
 def merge_particles (particles, n_parts, n_dims):
@@ -220,8 +231,7 @@ def merge_particles (particles, n_parts, n_dims):
     return merged_particles.reshape (n_parts, n_dims)
 
 
-
-def run_pso (n_particles, n_dims, n_subpops, n_subspaces,
+def run_partitioned_pso (n_particles, n_dims, n_subpops, n_subspaces,
             consts, fitness, max_iter=100, u_bound=1, l_bound=-1):
 
     if n_particles % n_subpops != 0 or n_dims % n_subspaces != 0:
@@ -248,8 +258,8 @@ def run_pso (n_particles, n_dims, n_subpops, n_subspaces,
         particles[i] = update_positions (particles[i], velocities[i])
         evals_parts[i] = fitness (particles[i])
 
-        best_parts[i], g, evals_best[i], eval_g = update_best (
-            particles[i], best_parts[i], g, evals_parts[i], evals_best[i], eval_g)
+        #best_parts[i], g, evals_best[i], eval_g = update_best (
+        #    particles[i], best_parts[i], g, evals_parts[i], evals_best[i], eval_g)
 
         best_fitness.append (eval_g)
 
@@ -270,9 +280,9 @@ if __name__ == '__main__':
     n_subpops = 2
     n_subspaces = 2
     consts = [0.7, 1.4, 1.4]
-    fitness = lambda x: np.sum(x**2)
+    fitness = lambda positions: np.sum(positions**2)
 
-    g, res = run_pso (n_particles, n_dims, n_subpops, 
-                    n_subspaces, consts, fitness)
+    #g, res = run_pso (n_particles, n_dims, n_subpops, 
+    #                n_subspaces, consts, fitness)
 
-    print (res)
+    #print (res)
