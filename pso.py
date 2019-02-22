@@ -194,8 +194,13 @@ def update_global_best (positions, global_best, f_pos, fg):
 
 def split_particles (particles, n_subpops, n_subspaces):
     '''
-    Split all PSO particles in partitions according to the
-    proposal by ***.
+    Split all PSO particles in partitions.
+    Example of two particles: [[1,2,6,3,1,1], [9,9,1,2,4,7]]
+        split in 2 subpops and 3 subspaces:
+
+    1 2 | 6 3 | 1 1
+    ---------------
+    9 9 | 1 2 | 4 7
 
     Attributes
     ----------
@@ -208,11 +213,12 @@ def split_particles (particles, n_subpops, n_subspaces):
 
     Returns
     -------
-    partitions: 2d array
-        
+    partitions: 3d array   
     '''
-    
-    return None
+
+    subpops = np.array (np.split (particles, n_subpops))
+    subspaces = np.array (np.split (subpops,2,axis=2))
+    return np.concatenate (subspaces)
 
  
 def merge_particles (particles, n_parts, n_dims):
