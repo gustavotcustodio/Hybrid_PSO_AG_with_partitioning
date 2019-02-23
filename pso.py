@@ -213,28 +213,23 @@ def split_particles (particles, n_subpops, n_subspaces):
 
     Returns
     -------
-    partitions: 3d array   
+    partitions: 3d array
+        N
     '''
-
     subpops = np.array (np.split (particles, n_subpops))
-    subspaces = np.array (np.split (subpops,2,axis=2))
+    subspaces = np.array (np.split (subpops, n_subspaces, axis=2))
+
     return np.concatenate (subspaces)
 
  
-def merge_particles (particles, n_parts, n_dims):
-    
-    n_subpops     = n_parts / particles.shape[1]
-    n_subspaces   = n_dims /  particles.shape[2]
-    n_particles_per_block = particles.shape[1]
+def merge_particles (partitions, n_subspaces):
+    # 2d array containing subspaces of particles
+    particles_slices = np.concatenate ( partitions )
 
-    total = n_subspaces * n_subpops
-        
-    merged_particles = np.array (
-        [[particles [i:i+n_subspaces, j, :] for j in range(n_particles_per_block)] 
-        for i in range(0, total, n_subspaces)]
-    )
+    # 3d array with slices of particles splitted in n_subspaces
+    particles_subspaces = np.split (particles_slices,  n_subspaces)
 
-    return merged_particles.reshape (n_parts, n_dims)
+    return np.concatenate (particles_subspaces, axis=1)
 
 
 def run_partitioned_pso (n_particles, n_dims, n_subpops, n_subspaces,

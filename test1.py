@@ -53,8 +53,7 @@ class TestPSO (unittest.TestCase):
         np.testing.assert_allclose (
             pso.update_velocities (particles, best_parts, global_best, 
                                     velocities, consts), 
-            array_test, atol=3.0
-        )
+            array_test, atol=3.0)
         
     def test_update_positions (self):
         x = np.array([[ 0.6, 0.2, 0.2], [0.1, 0.5, 0.1]])
@@ -99,20 +98,40 @@ class TestPSO (unittest.TestCase):
 
     def test_split_particles (self):
         particles_1 = np.array ([[0,0,1,0],[0,1,0,0],[1,1,1,1],[1,1,0,1]])
-        particles_2 = np.array ([[1,5,2,3,4,6],[1,4,6,7,8,3],[9,8,2,1,1,1]])
+        particles_2 = np.array ([[1,5,2,3,4,6],[1,4,6,7,8,3],
+                                 [9,8,2,1,1,1],[3,3,2,4,9,9]])
 
-        correct_partition_pop_1 = np.array ([[0,0],[0,1],[1,0],[0,0],
-                                             [1,1],[1,1],[1,0],[1,1]])
-        correct_partition_pop_2 = np.array ([[1,5],[2,3],[4,6],[1,4],[6,7],
-                                             [8,3],[9,8],[2,1],[1,1]])
+        partition_1 = np.array ([[[0],[0]],[[1],[1]],[[0],[1]],[[1],[1]],
+                                 [[1],[0]],[[1],[0]],[[0],[0]],[[1],[1]]])
+
+        partition_2 = np.array ([[[1,5],[1,4]],[[9,8],[3,3]],[[2,3],[6,7]],
+                                 [[2,1],[2,4]],[[4,6],[8,3]],[[1,1],[9,9]]])
         #n_subpops = 2 n_subspaces = 4
-        np.testing.assert_equal (pso.split_particles (particles_1, 2, 4),
-                                    correct_partition_pop_1)
+        np.testing.assert_equal (
+            pso.split_particles (particles_1, 2, 4), partition_1)
+                            
         #n_subpops = 3 n_subspaces = 3
-        np.testing.assert_equal (pso.split_particles (particles_2, 3, 3),
-                                    correct_partition_pop_2)
+        np.testing.assert_equal (
+            pso.split_particles (particles_2, 2, 3), partition_2)
+                                
+    def test_merge_particles (self):
+        partition_1 = np.array ([[[0],[0]],[[1],[1]],[[0],[1]],[[1],[1]],
+                                 [[1],[0]],[[1],[0]],[[0],[0]],[[1],[1]]])
 
+        partition_2 = np.array ([[[1,5],[1,4]],[[9,8],[3,3]],[[2,3],[6,7]],
+                                 [[2,1],[2,4]],[[4,6],[8,3]],[[1,1],[9,9]]])
 
+        particles_1 = np.array ([[0,0,1,0],[0,1,0,0],[1,1,1,1],[1,1,0,1]])
+        particles_2 = np.array ([[1,5,2,3,4,6],[1,4,6,7,8,3],
+                                 [9,8,2,1,1,1],[3,3,2,4,9,9]])
+
+        #n_subspaces = 4
+        np.testing.assert_equal (
+            pso.merge_particles (partition_1, 4), particles_1)
+                            
+        #n_subspaces = 3
+        np.testing.assert_equal (
+            pso.merge_particles (partition_2, 3), particles_2)
     #def test_run_pso (self):
     #    n_particles = 5
     #    n_dims = 4
