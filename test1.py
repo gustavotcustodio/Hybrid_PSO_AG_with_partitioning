@@ -38,7 +38,7 @@ class TestPSO (unittest.TestCase):
         f_values = np.array ([0.4, 0.3, 0.8])
 
         np.testing.assert_array_equal (
-            pso.get_best_particle (particles, f_values), particles[2]
+            pso.get_best_particle (particles, f_values, task='max'), particles[2]
         )
 
     def test_update_velocities (self):
@@ -65,20 +65,35 @@ class TestPSO (unittest.TestCase):
             pso.update_positions (x, v), array_test)
 
     def test_update_best_solutions (self):
-        positions  = np.array ([[0.6, 0.2, 0.4], [0.0, 0.1, 0.1], [0.0, 0.0, 0.0]])
-        best_parts = np.array ([[0.2, 0.1, 0.3], [0.1, 0.1, 0.1], [0.3, 0.3, 0.3]])
-
+        positions = np.array ([[0.6, 0.2, 0.4], [0.0, 0.1, 0.1], [0.0, 0.0, 0.0]])
         f_pos  = np.sum (positions **2, axis=1)
+
+        ################ Test for maximization ################
+        best_parts = np.array ([[0.2, 0.1, 0.3], [0.1, 0.1, 0.1], [0.3, 0.3, 0.3]])
         f_best = np.sum (best_parts**2, axis=1)
 
         correct_best_parts = np.array (
             [[0.6, 0.2, 0.4], [0.1, 0.1, 0.1], [0.3, 0.3, 0.3]])
         correct_f_best = np.sum (correct_best_parts**2, axis=1)
 
+        pso.update_best_solutions (positions, best_parts, f_pos, f_best, task='max')
+
+        np.testing.assert_array_equal (best_parts, correct_best_parts)
+        np.testing.assert_array_equal (f_best, correct_f_best)
+
+        ################ Test for minimization ################
+        best_parts = np.array ([[0.3, 0.2, 0.3], [0.2, 0.1, 0.1], [0.3, 0.6, 0.3]])
+        f_best = np.sum (best_parts**2, axis=1)
+
+        correct_best_parts = np.array (
+            [[0.3, 0.2, 0.3], [0.0, 0.1, 0.1], [0.0, 0.0, 0.0]])
+        correct_f_best = np.sum (correct_best_parts**2, axis=1)
+
         pso.update_best_solutions (positions, best_parts, f_pos, f_best)
 
         np.testing.assert_array_equal (best_parts, correct_best_parts)
         np.testing.assert_array_equal (f_best, correct_f_best)
+        
 
     def test_update_global_best (self):
         positions = np.array (
@@ -88,13 +103,25 @@ class TestPSO (unittest.TestCase):
         f_pos = np.sum (positions **2, axis=1)
         fg = np.sum (global_best **2)
 
+        ################ Test for maximization ################
         correct_global_best = np.array ([1.0, 0.5, 0.4, 0.1])
         correct_fg = np.sum (correct_global_best**2)
 
-        global_best, fg = pso.update_global_best (positions, global_best, f_pos, fg)
+        global_best, fg = pso.update_global_best (
+                            positions, global_best, f_pos, fg, task='max')
 
         np.testing.assert_array_equal (global_best, correct_global_best)
         np.testing.assert_array_equal (fg, correct_fg)
+
+        ################ Test for minimization ################
+        correct_global_best = np.array ([0.2, 0.2, 0.1, 0.2])
+        correct_fg = np.sum (correct_global_best**2)
+
+        global_best, fg = pso.update_global_best (
+                            positions, global_best, f_pos, fg)
+        np.testing.assert_array_equal (global_best, correct_global_best)
+        np.testing.assert_array_equal (fg, correct_fg)
+
 
     def test_split_particles (self):
         particles_1 = np.array ([[0,0,1,0],[0,1,0,0],[1,1,1,1],[1,1,0,1]])
@@ -108,8 +135,7 @@ class TestPSO (unittest.TestCase):
                                  [[2,1],[2,4]],[[4,6],[8,3]],[[1,1],[9,9]]])
         #n_subpops = 2 n_subspaces = 4
         np.testing.assert_equal (
-            pso.split_particles (particles_1, 2, 4), partition_1)
-                            
+            pso.split_particles (particles_1, 2, 4), partition_1)                   
         #n_subpops = 3 n_subspaces = 3
         np.testing.assert_equal (
             pso.split_particles (particles_2, 2, 3), partition_2)
@@ -124,26 +150,32 @@ class TestPSO (unittest.TestCase):
         particles_1 = np.array ([[0,0,1,0],[0,1,0,0],[1,1,1,1],[1,1,0,1]])
         particles_2 = np.array ([[1,5,2,3,4,6],[1,4,6,7,8,3],
                                  [9,8,2,1,1,1],[3,3,2,4,9,9]])
-
         #n_subspaces = 4
         np.testing.assert_equal (
-            pso.merge_particles (partition_1, 4), particles_1)
-                            
+            pso.merge_particles (partition_1, 4), particles_1)                         
         #n_subspaces = 3
         np.testing.assert_equal (
             pso.merge_particles (partition_2, 3), particles_2)
-    #def test_run_pso (self):
-    #    n_particles = 5
-    #    n_dims = 4
-    #    n_subpops = 2
-    #    n_subspaces = 2
-    #    consts = np.array([0.7, 1.4, 1.4])
-    #    fitness = lambda x: np.sum(x**2)
-        
-    #    _, evals = pso.run_pso (n_particles, n_dims, n_subpops, 
-    #                            n_subspaces, consts, fitness)
 
-    #    np.testing.assert_array_equal (evals, np.sort(evals) )
+    def test_run_pso(self):
+        positions = np.array([[1, 0.6,-0.2], [0.1,-0.2,-0.7], [0.3, 0.2, 0.1]])
+        positions_mod = np.copy (positions)
+
+        eval_func = lambda x: x ** 2
+        max_iter = 10
+
+        first_eval = eval_func (positions)
+
+        new_positions, global_best, global_eval = pso.run_pso (
+            eval_func, max_iter, consts, initial_positions = positions_mod)
+
+        np.testing.assert_allclose (new_positions, np.zeros((3,3)), atol=1.0 )
+        np.testing.assert_allclose (global_eval, np.zeros((3)), atol=1.0 )
+
+        self.assertTrue (global_eval <= first_eval)
+
+
+
 
 
 if __name__ == '__main__':

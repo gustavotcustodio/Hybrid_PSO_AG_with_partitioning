@@ -89,12 +89,18 @@ def evaluate_particle (fitness, particle):
 def copy_particle (particle):
     return np.copy (particle)
 
-def get_best_particle (particles, evals_parts):
+def get_best_particle (particles, evals_parts, task = 'min'):
     '''
     Get the particle with best evaluation.
+    The task parameter says if it is a minimization or
+    maximization problem.
     '''
-    i_max = np.argmax (evals_parts)
-    return particles [i_max]
+    if task == 'min':    
+        i_min = np.argmax (evals_parts)
+        return particles [i_min]
+    if task == 'max':    
+        i_max = np.argmax (evals_parts)
+        return particles [i_max]
 
 def update_velocities (particles, best_parts, global_best, 
                                         velocities, consts):
@@ -137,7 +143,7 @@ def update_positions (positions, velocities):
     '''
     return positions + velocities
 
-def update_best_solutions (positions, best_parts, f_pos, f_best):
+def update_best_solutions (positions, best_parts, f_pos, f_best, task='min'):
     '''
     Update the best known positions of PSO particles with the
     new best positions found.
@@ -153,16 +159,21 @@ def update_best_solutions (positions, best_parts, f_pos, f_best):
         Evaluations of particles according to their positions.
     f_best: 1d array
         Evaluations of best solutions found by particles.
+    task: string
+        Min if the better solution is the one with lower evaluation, 
+        max if the better solution is the one with higher evaluation.
     '''
-    # Indices where the particles have better evaluation than the current best.
-    indices_better = np.where (f_pos > f_best)[0]
-    
+    if task == 'min':
+        # Indices where the particles have better evaluation than the current best.
+        indices_better = np.where (f_pos < f_best)[0]
+    else:
+        indices_better = np.where (f_pos > f_best)[0]
     best_parts [indices_better] = np.copy (positions [indices_better])
     f_best [indices_better] = np.copy (f_pos [indices_better])
 
     return best_parts
 
-def update_global_best (positions, global_best, f_pos, fg):
+def update_global_best (positions, global_best, f_pos, fg, task='min'):
     '''
     Update the best known global solution, if a better particle is found.
 
@@ -185,10 +196,14 @@ def update_global_best (positions, global_best, f_pos, fg):
     new_fg: float
         New evaluation value of the global solution.
     '''
-    index_best = np.argmax (f_pos)
-
-    if f_pos [index_best] > fg:
-        return np.copy( positions[index_best] ), f_pos[index_best]
+    if task =='min':
+        index_best = np.argmin (f_pos)
+        if f_pos [index_best] < fg:
+            return np.copy( positions[index_best] ), f_pos[index_best]
+    else:
+        index_best = np.argmax (f_pos)
+        if f_pos [index_best] > fg:
+            return np.copy( positions[index_best] ), f_pos[index_best]
     return global_best, fg
 
 
@@ -196,7 +211,7 @@ def split_particles (particles, n_subpops, n_subspaces):
     '''
     Split all PSO particles in partitions.
     Example of two particles: [[1,2,6,3,1,1], [9,9,1,2,4,7]]
-        split in 2 subpops and 3 subspaces:
+    splitted in 2 subpops and 3 subspaces:
 
     1 2 | 6 3 | 1 1
     ---------------
@@ -209,12 +224,12 @@ def split_particles (particles, n_subpops, n_subspaces):
     n_subpops: int
         Number of groups which the particles are divided.
     n_subspaces: int
-        Number of parts to split each particle.
+        Number of slices to split each particle.
 
     Returns
     -------
-    partitions: 3d array
-        N
+    partitions: 3d array [partition, particle, particle_dimension]
+        Particles splitted in different partitions.
     '''
     subpops = np.array (np.split (particles, n_subpops))
     subspaces = np.array (np.split (subpops, n_subspaces, axis=2))
@@ -223,6 +238,22 @@ def split_particles (particles, n_subpops, n_subspaces):
 
  
 def merge_particles (partitions, n_subspaces):
+    '''
+    Merge particles splitted in split_particles method.
+
+    Parameters
+    ----------
+    partitions: 3d array
+        PSO particles splitted in partitions.
+    n_subspaces: int
+        Number of slices to split each particle.
+
+    Returns
+    -------
+    particles: 2d array
+        Partitions of particles splitted in a 3d array
+        merged again in a 2d array.
+    '''
     # 2d array containing subspaces of particles
     particles_slices = np.concatenate ( partitions )
 
@@ -231,8 +262,10 @@ def merge_particles (partitions, n_subspaces):
 
     return np.concatenate (particles_subspaces, axis=1)
 
+def run_pso (eval_func, max_iter, consts, initial_positions = None):
+    return None
 
-def run_partitioned_pso (n_particles, n_dims, n_subpops, n_subspaces,
+def partitioned_pso (n_particles, n_dims, n_subpops, n_subspaces,
             consts, fitness, max_iter=100, u_bound=1, l_bound=-1):
 
     if n_particles % n_subpops != 0 or n_dims % n_subspaces != 0:
