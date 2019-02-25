@@ -23,10 +23,12 @@ class TestPSO (unittest.TestCase):
         self.assertTrue (velocities.shape == (100,10))
         self.assertTrue ((velocities <= 1).all() and (velocities >= -1).all())
 
-    def test_evaluate_particle (self):
-        particle = np.array ([1.0, 0.8, 0.2, 0.4])
-        fitness = lambda p: np.sum (p ** 2)
-        self.assertAlmostEqual (pso.evaluate_particle (fitness, particle), 1.84 )
+    def test_evaluate_particles (self):
+        particle = np.array ([[1.0, 0.8, 0.2, 0.4], [0.2, 0.5, 0.5, 0.5]])
+        evals = np.array([1.84, 0.79])
+        eval_func = lambda p: np.sum (p ** 2)
+        np.testing.assert_almost_equal (
+                        pso.evaluate_particles (eval_func, particle), evals)
 
     def test_copy_particle (self):
         particle = np.array ([0.2, 0.1, 0.9])
@@ -37,9 +39,11 @@ class TestPSO (unittest.TestCase):
             [[0.2, 0.3, 0.4], [0.2, 0.3, 0.3], [0.5, 0.7, 0.8]] )
         f_values = np.array ([0.4, 0.3, 0.8])
 
-        np.testing.assert_array_equal (
-            pso.get_best_particle (particles, f_values, task='max'), particles[2]
-        )
+        best_particle, eval_best = pso.get_best_particle (
+                                        particles, f_values, task='max')
+
+        np.testing.assert_array_equal (best_particle, particles[2])
+        self.assertEqual (eval_best, f_values[2])
 
     def test_update_velocities (self):
         particles  = np.random.uniform ( 0,1,size=(10,8))
@@ -66,61 +70,62 @@ class TestPSO (unittest.TestCase):
 
     def test_update_best_solutions (self):
         positions = np.array ([[0.6, 0.2, 0.4], [0.0, 0.1, 0.1], [0.0, 0.0, 0.0]])
-        f_pos  = np.sum (positions **2, axis=1)
+        evals_parts  = np.sum (positions **2, axis=1)
 
         ################ Test for maximization ################
         best_parts = np.array ([[0.2, 0.1, 0.3], [0.1, 0.1, 0.1], [0.3, 0.3, 0.3]])
-        f_best = np.sum (best_parts**2, axis=1)
+        evals_best = np.sum (best_parts**2, axis=1)
 
         correct_best_parts = np.array (
             [[0.6, 0.2, 0.4], [0.1, 0.1, 0.1], [0.3, 0.3, 0.3]])
-        correct_f_best = np.sum (correct_best_parts**2, axis=1)
+        correct_evals_best = np.sum (correct_best_parts**2, axis=1)
 
-        pso.update_best_solutions (positions, best_parts, f_pos, f_best, task='max')
+        pso.update_best_solutions (
+            positions, best_parts, evals_parts, evals_best, task='max')
 
         np.testing.assert_array_equal (best_parts, correct_best_parts)
-        np.testing.assert_array_equal (f_best, correct_f_best)
+        np.testing.assert_array_equal (evals_best, correct_evals_best)
 
         ################ Test for minimization ################
         best_parts = np.array ([[0.3, 0.2, 0.3], [0.2, 0.1, 0.1], [0.3, 0.6, 0.3]])
-        f_best = np.sum (best_parts**2, axis=1)
+        evals_best = np.sum (best_parts**2, axis=1)
 
         correct_best_parts = np.array (
             [[0.3, 0.2, 0.3], [0.0, 0.1, 0.1], [0.0, 0.0, 0.0]])
-        correct_f_best = np.sum (correct_best_parts**2, axis=1)
+        correct_evals_best = np.sum (correct_best_parts**2, axis=1)
 
-        pso.update_best_solutions (positions, best_parts, f_pos, f_best)
+        pso.update_best_solutions (positions, best_parts, evals_parts, evals_best)
 
         np.testing.assert_array_equal (best_parts, correct_best_parts)
-        np.testing.assert_array_equal (f_best, correct_f_best)
+        np.testing.assert_array_equal (evals_best, correct_evals_best)
         
 
     def test_update_global_best (self):
-        positions = np.array (
+        particles = np.array (
             [[1.0, 0.5, 0.4, 0.1], [0.9, 0.3, 0.5, 0.0], [0.2, 0.2, 0.1, 0.2]])
         global_best = np.array ([0.4, 0.2, 0.3, 0.1])
 
-        f_pos = np.sum (positions **2, axis=1)
-        fg = np.sum (global_best **2)
+        evals_parts = np.sum (particles **2, axis=1)
+        eval_global = np.sum (global_best **2)
 
         ################ Test for maximization ################
         correct_global_best = np.array ([1.0, 0.5, 0.4, 0.1])
-        correct_fg = np.sum (correct_global_best**2)
+        correct_eval_global = np.sum (correct_global_best**2)
 
-        global_best, fg = pso.update_global_best (
-                            positions, global_best, f_pos, fg, task='max')
+        global_best, eval_global = pso.update_global_best (
+                particles, global_best, evals_parts, eval_global, task='max')
 
         np.testing.assert_array_equal (global_best, correct_global_best)
-        np.testing.assert_array_equal (fg, correct_fg)
+        np.testing.assert_array_equal (eval_global, correct_eval_global)
 
         ################ Test for minimization ################
         correct_global_best = np.array ([0.2, 0.2, 0.1, 0.2])
-        correct_fg = np.sum (correct_global_best**2)
+        correct_eval_global = np.sum (correct_global_best**2)
 
-        global_best, fg = pso.update_global_best (
-                            positions, global_best, f_pos, fg)
+        global_best, eval_global = pso.update_global_best (
+                            particles, global_best, evals_parts, eval_global)
         np.testing.assert_array_equal (global_best, correct_global_best)
-        np.testing.assert_array_equal (fg, correct_fg)
+        np.testing.assert_array_equal (eval_global, correct_eval_global)
 
 
     def test_split_particles (self):
@@ -158,23 +163,26 @@ class TestPSO (unittest.TestCase):
             pso.merge_particles (partition_2, 3), particles_2)
 
     def test_run_pso(self):
-        positions = np.array([[1, 0.6,-0.2], [0.1,-0.2,-0.7], [0.3, 0.2, 0.1]])
-        positions_mod = np.copy (positions)
+        particles = np.array (
+                    [[ 1.0, 0.6,-0.2], [0.1,-0.2,-0.7], [ 0.3, 0.2, 0.1]])
+        particles_copy = np.copy (particles)
 
-        eval_func = lambda x: x ** 2
+        eval_func = lambda p: np.sum (p ** 2)
         max_iter = 10
 
-        first_eval = eval_func (positions)
+        first_eval = eval_func (particles)
+        consts = [0.7, 0.7, 0.9]
 
-        new_positions, global_best, global_eval = pso.run_pso (
-            eval_func, max_iter, consts, initial_positions = positions_mod)
+        new_particles, _, eval_global = pso.run_pso (
+            eval_func, max_iter, consts, initial_particles = particles_copy)
 
-        np.testing.assert_allclose (new_positions, np.zeros((3,3)), atol=1.0 )
-        np.testing.assert_allclose (global_eval, np.zeros((3)), atol=1.0 )
+        np.testing.assert_allclose (new_particles, np.zeros((3,3)), atol=1.0 )
+        np.testing.assert_allclose (eval_global, np.zeros((3)), atol=1.0 )
 
-        self.assertTrue (global_eval <= first_eval)
+        eval_best_particle = min ([eval_func (pos) for pos in new_particles])
 
-
+        self.assertTrue (eval_global <= first_eval)
+        self.assertEqual (eval_global, eval_best_particle)
 
 
 
