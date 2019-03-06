@@ -1,6 +1,10 @@
 import numpy as np
 import random
 
+def selection (population, num_to_select):
+    indices = np.arange (population.shape[0])
+    return population [indices[0:num_to_select]]
+
 def crossover (population, prob_cross, c):
     '''
     Combine multiple chromosomes to genereate new ones.
@@ -13,7 +17,7 @@ def crossover (population, prob_cross, c):
         Probability of occurring a crossover between
         two chromosomes ranging from 0 to 1.
     c: float
-        *****
+        Weighting factor for crossover.
 
     Returns
     -------

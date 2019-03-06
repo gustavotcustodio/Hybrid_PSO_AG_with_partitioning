@@ -53,6 +53,22 @@ class TestGA (unittest.TestCase):
         array_to_compare = np.zeros((2, 3, 2))
         np.testing.assert_allclose (partitions_change_2, 
                                     array_to_compare, atol=1.0)
+
+    def test_selection (self):
+        np.random.seed (0)
+        population = np.array (
+            [[1,5,8,9,9,1],
+             [0,1,7,8,7,7],
+             [7,1,2,2,3,5],
+             [3,2,9,2,0,0]]
+        )
+        num_to_select = 2
+        correct = population[[0,1]]
+
+        np.testing.assert_equal (
+            genetic.selection (population, num_to_select), correct
+        )
         
+
 if __name__ == '__main__':
     unittest.main()

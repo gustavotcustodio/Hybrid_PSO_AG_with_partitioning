@@ -197,7 +197,7 @@ def update_best_solutions (
 
 
 def update_global_best (
-    particles, global_best, evals_parts, eval_global, task='min'):
+        particles, global_best, evals_parts, eval_global, task='min'):
     '''
     Update the best known global solution, if a better particle is found.
 
@@ -236,62 +236,6 @@ def update_global_best (
     return global_best, eval_global
 
 
-def split_particles (particles, n_subpops, n_subspaces):
-    '''
-    Split all PSO particles in partitions.
-    Example of two particles: [[1,2,6,3,1,1], [9,9,1,2,4,7]]
-    splitted in 2 subpops and 3 subspaces:
-
-    1 2 | 6 3 | 1 1
-    ---------------
-    9 9 | 1 2 | 4 7
-
-    Attributes
-    ----------
-    particles: 2d array
-        All PSO particles.
-    n_subpops: int
-        Number of groups which the particles are divided.
-    n_subspaces: int
-        Number of slices to split each particle.
-
-    Returns
-    -------
-    partitions: 3d array [partition, particle, particle_dimension]
-        Particles splitted in different partitions.
-    '''
-    subpops = np.array (np.split (particles, n_subpops))
-    subspaces = np.array (np.split (subpops, n_subspaces, axis=2))
-
-    return np.concatenate (subspaces)
-
- 
-def merge_particles (partitions, n_subspaces):
-    '''
-    Merge particles splitted in split_particles method.
-
-    Parameters
-    ----------
-    partitions: 3d array
-        PSO particles splitted in partitions.
-    n_subspaces: int
-        Number of slices to split each particle.
-
-    Returns
-    -------
-    particles: 2d array
-        Partitions of particles splitted in a 3d array
-        merged again in a 2d array.
-    '''
-    # 2d array containing subspaces of particles
-    particles_slices = np.concatenate ( partitions )
-
-    # 3d array with slices of particles splitted in n_subspaces
-    particles_subspaces = np.split (particles_slices,  n_subspaces)
-
-    return np.concatenate (particles_subspaces, axis=1)
-
-
 def run_pso (eval_func, max_iter, consts, pop_size=100, particle_size=10,
             initial_particles = None, l_bound=-1.0, u_bound=1.0, task='min'):
     '''
@@ -321,6 +265,12 @@ def run_pso (eval_func, max_iter, consts, pop_size=100, particle_size=10,
 
     Returns
     -------
+    particles: 2d array
+        2d array with each particle in a row.
+    global_best: 1d array
+        Best solution found by PSO.
+    eval_global: float
+        Evalulation value for global best solution.
     '''
     if initial_particles is None:
         particles = generate_particles (
@@ -338,13 +288,11 @@ def run_pso (eval_func, max_iter, consts, pop_size=100, particle_size=10,
     global_best, eval_global = get_best_particle (particles, evals_parts, task)
 
     velocities = generate_velocities (
-                    pop_size, particle_size, l_bound, u_bound)
-
+                                pop_size, particle_size, l_bound, u_bound)
     for _ in range (max_iter):
         velocities = update_velocities (
                         particles, best_parts, global_best, velocities, consts)
         particles  = update_positions  (particles, velocities)
-
         evals_parts = evaluate_particles (eval_func, particles)
 
         update_best_solutions (
@@ -354,42 +302,6 @@ def run_pso (eval_func, max_iter, consts, pop_size=100, particle_size=10,
                     particles, global_best, evals_parts, eval_global, task)
 
     return particles, global_best, eval_global
-
-
-def partitioned_pso (n_particles, n_dims, n_subpops, n_subspaces,
-                    consts, fitness, max_iter=100, u_bound=1.0, l_bound=-1.0):
-
-    if n_particles % n_subpops != 0 or n_dims % n_subspaces != 0:
-        return -float('infinity'), np.array([])
-
-    particles = generate_particles (
-                    n_particles, n_dims, l_bound, u_bound)
-    velocities = generate_velocities (
-                    n_particles, n_dims, l_bound, u_bound)
-    best_parts = np.apply_along_axis (copy_particle, 1, particles)
-
-    evals_parts = np.apply_along_axis (fitness, 1, particles)
-    evals_best = np.copy (evals_parts)
-
-    g = get_best_particle (best_parts, evals_best)
-    eval_g  = fitness (g)
-
-    best_fitness = []
-
-    for _ in range(max_iter):
-        
-        update_velocities (particles[i], best_parts[i], g, velocities[i], consts)
-
-        particles[i] = update_positions (particles[i], velocities[i])
-        evals_parts[i] = fitness (particles[i])
-
-        #best_parts[i], g, evals_best[i], eval_g = update_best (
-        #    particles[i], best_parts[i], g, evals_parts[i], evals_best[i], eval_g)
-
-        best_fitness.append (eval_g)
-
-    return g, np.array(best_fitness)
-
 
 if __name__ == '__main__':
     selection = np.array([0,1,4,6])
