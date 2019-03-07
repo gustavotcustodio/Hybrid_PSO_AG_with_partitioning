@@ -236,7 +236,7 @@ def update_global_best (
     return global_best, eval_global
 
 
-def run_pso (eval_func, max_iter, consts, pop_size=100, particle_size=10,
+def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
             initial_particles = None, l_bound=-1.0, u_bound=1.0, task='min'):
     '''
     Run the PSO algorithm for max_iter iterations.
@@ -306,7 +306,7 @@ def run_pso (eval_func, max_iter, consts, pop_size=100, particle_size=10,
 if __name__ == '__main__':
     selection = np.array([0,1,4,6])
 
-    selection = selection.reshape( selection.shape[0]/2, 2)
+    selection = selection.reshape( int(selection.shape[0]/2), 2)
 
     n_particles = 6
     n_dims = 4
@@ -315,7 +315,4 @@ if __name__ == '__main__':
     consts = [0.7, 1.4, 1.4]
     eval_func = lambda p: np.sum (p**2)
 
-    run_pso (eval_func, 50, consts, pop_size=10)
-    #                n_subspaces, consts, fitness)
-
-    #print (res)
+    particles, _, _ = run_pso (eval_func, consts, max_iter=50, pop_size=10)
