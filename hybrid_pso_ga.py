@@ -62,48 +62,48 @@ def merge_particles (partitions, n_subspaces):
 
 
 def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part, 
-    n_vars_part, consts, eval_func, iters_hybrid=100, u_bound=1.0, l_bound=-1.0):
+    n_vars_part, consts, eval_func, iters_hybrid=100, u_bound=1.0, l_bound=-1.0,
+    prob_cross = 0.5, c = 0.5):
     '''
     '''                
-    particles = None
+    population = None
 
     for _ in range(iters_hybrid):
                 
         # Apply the standard PSO to all particles 
-        particles, _, _ = pso.run_pso (
-                            eval_func, consts, max_iter=100, pop_size=100, 
-                            particle_size=10, initial_particles = particles)
+        population, _, _ = pso.run_pso (
+                            eval_func, consts, max_iter=100, pop_size=8, 
+                            particle_size=9, initial_particles = population)
 
-        print (particles)
-
-        n_subspaces = int (particles.shape[1] / n_vars_part)
-
-        n_subpops =   (n_partitions * n_particles_part) / n_subspaces
+        n_subspaces = int (population.shape[1] / n_vars_part)
 
         # Number of particles to select
-        num_to_select = int (n_particles_part * n_particles_part / n_subpops)
+        num_to_select = int (n_partitions * n_particles_part / n_subspaces)
 
         # Apply the selection operator in all particles
-        selected_parts = ga.selection (particles, num_to_select)
+        selected_particles = ga.selection (population, num_to_select) # mudar para índices***
 
-        # Partition the population in sub-partitions
-        splitted_parts = split_particles (
-                            selected_parts, n_particles_part, n_vars_part)
+        splitted_pop = split_particles (selected_particles, 
+                                        n_particles_part, n_vars_part)
 
         # Apply crossover in all sub-partitions
+        for i in range(n_partitions):
+            splitted_pop[i] = ga.crossover (splitted_pop[i], prob_cross, c)
 
         # Apply mutation
-
         # Merge sub-partitions
-        merged_particles = merge_particles (
-                            split_particles, n_subspaces)
+        merged_pop = merge_particles (splitted_pop, n_subspaces)
 
-    return particles
+        print (population[:,-1])
+        print (merged_pop[:,-1])
+        
+        print ('==================================================================')
+
+    return population
 
 
 if __name__ == '__main__':
-    consts = [0.5, 0.5, 0.5]
-
+    consts = [0.7, 1.4, 1.4]
     eval_func = lambda p: np.sum (p**2)
 
     partitioned_pso (n_partitions=9, n_particles=6, n_vars=9, 

@@ -266,11 +266,11 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
     Returns
     -------
     particles: 2d array
-        2d array with each particle in a row.
-    global_best: 1d array
-        Best solution found by PSO.
-    eval_global: float
-        Evalulation value for global best solution.
+        2d array with each particle in a row after the PSO execution.
+    global_solutions: 2d array
+        Best global solutions found by PSO in each iter.
+    best_evals: list[float]
+        Evalulations for global best solution in each iteration.
     '''
     if initial_particles is None:
         particles = generate_particles (
@@ -287,8 +287,10 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
 
     global_best, eval_global = get_best_particle (particles, evals_parts, task)
 
-    velocities = generate_velocities (
-                                pop_size, particle_size, l_bound, u_bound)
+    velocities = generate_velocities (pop_size, particle_size, l_bound, u_bound)
+
+    global_solutions, best_evals = [], []
+
     for _ in range (max_iter):
         velocities = update_velocities (
                         particles, best_parts, global_best, velocities, consts)
@@ -300,8 +302,11 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
 
         global_best, eval_global = update_global_best (
                     particles, global_best, evals_parts, eval_global, task)
-
-    return particles, global_best, eval_global
+        
+        global_solutions.append (global_best)
+        best_evals.append (eval_global)
+        
+    return particles, np.array (global_solutions), best_evals
 
 if __name__ == '__main__':
     selection = np.array([0,1,4,6])
@@ -315,4 +320,7 @@ if __name__ == '__main__':
     consts = [0.7, 1.4, 1.4]
     eval_func = lambda p: np.sum (p**2)
 
-    particles, _, _ = run_pso (eval_func, consts, max_iter=50, pop_size=10)
+    particles, global_solutions, best_evals = run_pso (
+                    eval_func, consts, max_iter=50, pop_size=10)
+
+    print (best_evals)

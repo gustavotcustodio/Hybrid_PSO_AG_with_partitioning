@@ -136,19 +136,15 @@ class TestPSO (unittest.TestCase):
         eval_func = lambda p: np.sum (p ** 2)
         max_iter = 10
 
-        first_eval = eval_func (particles)
         consts = [0.7, 0.7, 0.9]
 
-        new_particles, _, eval_global = pso.run_pso (
-            eval_func, max_iter, consts, initial_particles = particles_copy)
+        new_particles, global_solutions, best_evals = pso.run_pso (
+                eval_func, consts, max_iter, initial_particles = particles_copy)
 
         np.testing.assert_allclose (new_particles, np.zeros((3,3)), atol=1.0 )
-        np.testing.assert_allclose (eval_global, np.zeros((3)), atol=1.0 )
+        np.testing.assert_allclose (global_solutions, np.zeros((10,3)), atol=1.0 )
 
-        eval_best_particle = min ([eval_func (pos) for pos in new_particles])
-
-        self.assertTrue (eval_global <= first_eval)
-        self.assertEqual (eval_global, eval_best_particle)
+        self.assertListEqual (best_evals, sorted(best_evals, reverse=True))
 
 
 
