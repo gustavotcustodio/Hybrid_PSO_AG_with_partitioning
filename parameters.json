@@ -1,0 +1,25 @@
+{
+    "Pso": 
+    {
+        "n_particles": 0,
+        "n_vars": 0,
+        "max_iter": 0,
+        "constants": [0.0, 0.0, 0.0],
+        "u_bound": 0,
+        "l_bound": 0,
+        "eval_func": "func"
+    },
+
+    "Ga":
+    {
+        "prob_cross": 0.0,
+        "prob_mut": 0.0
+    },
+
+    "Hybrid":
+    {
+        "max_iter": 0,
+        "n_particles_partition": 0,
+        "n_vars_partition": 0  
+    }
+}

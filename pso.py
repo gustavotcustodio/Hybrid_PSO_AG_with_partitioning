@@ -308,6 +308,7 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
         
     return particles, np.array (global_solutions), best_evals
 
+
 if __name__ == '__main__':
     selection = np.array([0,1,4,6])
 
@@ -322,5 +323,3 @@ if __name__ == '__main__':
 
     particles, global_solutions, best_evals = run_pso (
                     eval_func, consts, max_iter=50, pop_size=10)
-
-    print (best_evals)
