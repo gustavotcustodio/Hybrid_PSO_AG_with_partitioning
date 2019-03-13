@@ -89,7 +89,8 @@ def mutation (population, prob_mut, u_bound=1, l_bound=-1):
     return mut_population
 
 def run_ga (partitions, prob_cross, prob_mut, 
-                            c = 0.5, l_bound=-1, u_bound=1):
+                c = 0.5, l_bound = -1, u_bound = 1):
+                
     for i in range (partitions.shape[0]):
         cross_pop = crossover (partitions[i], prob_cross, c)
         partitions[i] = mutation (cross_pop, prob_mut, u_bound, l_bound)
