@@ -69,7 +69,7 @@ def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part,
     population = None
 
     for _ in range(max_iter_hybrid):
-                
+                        
         # Apply the standard PSO to all particles 
         population, _, _ = pso.run_pso (
                             eval_func, consts, max_iter=100, pop_size=8, 

@@ -1,27 +1,25 @@
 {
-    "Pso": 
+    "pso": 
     {
-        "pop_size": 0,
-        "particle_size": 0,
-        "max_iter": 0,
-        "constants": [0.0, 0.0, 0.0],
-        "u_bound": 0,
-        "l_bound": 0,
-        "eval_func": "func",
-        "task": "min"
+        "pop_sizes": 0,
+        "particle_sizes": [0, 0, 0, 0, 0],
+        "max_iters": [0, 0, 0, 0, 0],
+        "constants": [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+        "u_bounds": [0, 0, 0, 0, 0],
+        "l_bounds": [0, 0, 0, 0, "ass"],
+        "eval_funcs": ["func", "func", "func", "func", "func"],
+        "task": ["min", "min", "min", "min", "min"]
     },
-
-    "Ga":
+    "ga":
     {
-        "prob_cross": 0.0,
-        "prob_mut": 0.0,
-        "c": 0.0
+        "prob_cross": [0.0, 0.0, 0.0, 0.0, 0.0],
+        "prob_mut": [0.0, 0.0, 0.0, 0.0, 0.0],
+        "c": [0.0, 0.0, 0.0, 0.0, 0.0]
     },
-
-    "Hybrid":
+    "hybrid":
     {
-        "max_iter": 0,
-        "n_particles_partition": 0,
-        "n_vars_partition": 0  
+        "max_iter": [0, 0, 0, 0, 0],
+        "n_particles_partition": [0, 0, 0, 0, 0],
+        "n_vars_partition": [0, 0, 0, 0, 0]
     }
 }
