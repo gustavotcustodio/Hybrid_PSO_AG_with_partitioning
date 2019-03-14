@@ -62,18 +62,19 @@ def merge_particles (partitions, n_subspaces):
 
 
 def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part, 
-    n_vars_part, consts, eval_func, max_iter_hybrid=100, u_bound=1.0, l_bound=-1.0,
-    prob_cross = 0.5, c = 0.5):
+    n_vars_part, consts, eval_func, max_iters_hybrid=100, max_iters_pso=100,
+    u_bound=1.0, l_bound=-1.0, task ='min', prob_cross = 0.5, prob_mut = 0.02, c = 0.5):
     '''
     '''                
     population = None
 
-    for _ in range(max_iter_hybrid):
+    for _ in range(max_iters_hybrid):
                         
         # Apply the standard PSO to all particles 
         population, _, _ = pso.run_pso (
-                            eval_func, consts, max_iter=100, pop_size=8, 
-                            particle_size=9, initial_particles = population)
+                            eval_func, consts, max_iter= max_iters_pso, 
+                            pop_size= n_particles, particle_size= n_vars, 
+                            initial_particles= population)
 
         n_subspaces = int (population.shape[1] / n_vars_part)
 

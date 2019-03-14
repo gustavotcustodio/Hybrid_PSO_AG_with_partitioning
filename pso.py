@@ -143,7 +143,6 @@ def update_velocities (particles, best_parts, global_best,
     # Tranform the global best solution in a 2d array,
     # repeating the array containing the global solution in each row
     mat_global_best = np.tile (global_best, (pop_size, 1))
-
     return           (consts[0] * velocities
             ) + (r1 * consts[1] * (best_parts-particles)
             ) + (r2 * consts[2] * (mat_global_best-particles))

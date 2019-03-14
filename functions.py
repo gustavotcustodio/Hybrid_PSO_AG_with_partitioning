@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-def squareSum(x):
+def square_sum(x):
     return sum(np.square(x))	
 
 def rosenbrock(x):
@@ -18,3 +18,16 @@ def griewank(x):
                 (x - 100) / np.sqrt(range(1,len(x)+1)) 
             ))
     return  term1 - term2 + 1
+
+def get_function (function_name):
+    if function_name == 'square_sum':
+        return square_sum
+    elif function_name == 'rosenbrock':
+        return rosenbrock
+    elif function_name == 'rastrigin':
+        return rastrigin
+    elif function_name == 'griewank':
+        return griewank
+    else:
+        return None
+    

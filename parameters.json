@@ -1,13 +1,13 @@
 {
     "pso": 
     {
-        "pop_sizes": 0,
-        "particle_sizes": [0, 0, 0, 0, 0],
-        "max_iters": [0, 0, 0, 0, 0],
-        "constants": [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
-        "u_bounds": [0, 0, 0, 0, 0],
-        "l_bounds": [0, 0, 0, 0, "ass"],
-        "eval_funcs": ["func", "func", "func", "func", "func"],
+        "pop_sizes": [100, 100, 100, 100, 100],
+        "particle_sizes": [10, 10, 10, 10, 10],
+        "max_iters": [100, 100, 100, 100, 100],
+        "constants": [[0.7, 1.4, 1.4], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+        "u_bounds": [1.0, 1.0, 1.0, 1.0, 1.0],
+        "l_bounds": [-1.0, -1.0, -1.0, -1.0, -1.0],
+        "eval_funcs": ["rosenbrock", "rastrigin", "func", "func", "func"],
         "task": ["min", "min", "min", "min", "min"]
     },
     "ga":
@@ -19,6 +19,7 @@
     "hybrid":
     {
         "max_iter": [0, 0, 0, 0, 0],
+        "n_partitions": [0,0,0,0,0],
         "n_particles_partition": [0, 0, 0, 0, 0],
         "n_vars_partition": [0, 0, 0, 0, 0]
     }

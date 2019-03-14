@@ -1,5 +1,8 @@
 import numpy as np
 import json
+import hybrid_pso_ga
+import pso
+import functions
 
 def read_json (file_name):
     with open(file_name) as json_file:
@@ -15,21 +18,49 @@ def run_experiments ():
     The algorithm and index (starting 0) are determined by the parameters.json file.
     Example: ('pso', 0)
         It will run the pso algorithm with the values of first positions in lists.'''
-    experiments = [('hybrid', 0), ('pso', 0), ('hybrid', 1), ('pso', 1), 
-                   ('hybrid', 2), ('pso', 2), ('hybrid', 3), ('pso', 3),
-                   ('hybrid', 4), ('pso', 4)]
+    experiments = [('pso', 0), ('pso', 1), ('pso', 2), 
+                   ('pso', 3), ('pso', 4)]
 
-    #for i in range (len(params)):
-        #params['pso']['pop_sizes'][0]
+    for alg, i in experiments:
+        
+        eval_function = functions.get_function (params['pso']['eval_funcs'][i])
 
+        if alg == 'hybrid':
+            hybrid_pso_ga.partitioned_pso ( 
+                n_partitions = params ['hybrid']['n_partitions'][i], 
+                n_particles = params ['pso']['pop_sizes'][i], 
+                n_vars = params ['pso']['particle_sizes'][i], 
+                n_particles_part = params ['hybrid']['n_particles_partition'][i], 
+                n_vars_part = params ['hybrid']['n_vars_partition'][i], 
+                consts = params ['pso']['constants'][i], 
+                eval_func = eval_function,
+                max_iters_hybrid = params ['hybrid']['max_iters'][i],
+                max_iters_pso = params ['pso']['max_iters'][i], 
+                u_bound = params ['pso']['u_bounds'][i], 
+                l_bound = params ['pso']['l_bounds'][i],
+                task = params ['pso']['task'][i],
+                prob_cross = params ['ga']['prob_cross'][i], 
+                prob_mut = params ['ga']['prob_mut'][i], 
+                c = params ['ga']['c'][i] )
+
+        elif alg == 'pso':
+            pso.run_pso ( 
+                eval_func = eval_function, 
+                consts = params['pso']['constants'][i],
+                max_iter = params['pso']['max_iters'][i], 
+                pop_size = params['pso']['pop_sizes'][i], 
+                particle_size = params['pso']['particle_sizes'][i], 
+                initial_particles = None, 
+                l_bound = params['pso']['l_bounds'][i], 
+                u_bound = params['pso']['u_bounds'][i],
+                task = params['pso']['task'][i] )
 
 if __name__ == '__main__':
-    try:
-        run_experiments ()
+    #try:
+    run_experiments ()
 
-    except:
+    #Value error exception
+    #except:
         # File not found exception
-        print ('Erro durante a execução dos experimentos')
+     #   print ('Erro durante a execução dos experimentos')
 
-        # File not found exception
-        print ('Erro durante a execução dos experimentos')
