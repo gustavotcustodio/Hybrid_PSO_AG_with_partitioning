@@ -18,42 +18,50 @@ def run_experiments ():
     The algorithm and index (starting 0) are determined by the parameters.json file.
     Example: ('pso', 0)
         It will run the pso algorithm with the values of first positions in lists.'''
-    experiments = [('pso', 0), ('pso', 1), ('pso', 2), 
-                   ('pso', 3), ('pso', 4)]
+    experiments = [('pso', 0), ('pso', 1)]
+
+    # Number of times each group of experiments is run
+    n_runs = 10
 
     for alg, i in experiments:
         
         eval_function = functions.get_function (params['pso']['eval_funcs'][i])
 
+        naosei = []
+
         if alg == 'hybrid':
             hybrid_pso_ga.partitioned_pso ( 
-                n_partitions = params ['hybrid']['n_partitions'][i], 
-                n_particles = params ['pso']['pop_sizes'][i], 
-                n_vars = params ['pso']['particle_sizes'][i], 
-                n_particles_part = params ['hybrid']['n_particles_partition'][i], 
-                n_vars_part = params ['hybrid']['n_vars_partition'][i], 
-                consts = params ['pso']['constants'][i], 
-                eval_func = eval_function,
-                max_iters_hybrid = params ['hybrid']['max_iters'][i],
-                max_iters_pso = params ['pso']['max_iters'][i], 
-                u_bound = params ['pso']['u_bounds'][i], 
-                l_bound = params ['pso']['l_bounds'][i],
-                task = params ['pso']['task'][i],
-                prob_cross = params ['ga']['prob_cross'][i], 
-                prob_mut = params ['ga']['prob_mut'][i], 
-                c = params ['ga']['c'][i] )
+                    n_partitions = params ['hybrid']['n_partitions'][i], 
+                    n_particles = params ['pso']['pop_sizes'][i], 
+                    n_vars = params ['pso']['particle_sizes'][i], 
+                    n_particles_part = params ['hybrid']['n_particles_partition'][i], 
+                    n_vars_part = params ['hybrid']['n_vars_partition'][i], 
+                    consts = params ['pso']['constants'][i], 
+                    eval_func = eval_function,
+                    max_iters_hybrid = params ['hybrid']['max_iters'][i],
+                    max_iters_pso = params ['pso']['max_iters'][i], 
+                    u_bound = params ['pso']['u_bounds'][i], 
+                    l_bound = params ['pso']['l_bounds'][i],
+                    task = params ['pso']['task'][i],
+                    prob_cross = params ['ga']['prob_cross'][i], 
+                    prob_mut = params ['ga']['prob_mut'][i], 
+                    c = params ['ga']['c'][i] )
 
         elif alg == 'pso':
-            pso.run_pso ( 
-                eval_func = eval_function, 
-                consts = params['pso']['constants'][i],
-                max_iter = params['pso']['max_iters'][i], 
-                pop_size = params['pso']['pop_sizes'][i], 
-                particle_size = params['pso']['particle_sizes'][i], 
-                initial_particles = None, 
-                l_bound = params['pso']['l_bounds'][i], 
-                u_bound = params['pso']['u_bounds'][i],
-                task = params['pso']['task'][i] )
+            a, b, c = pso.run_pso ( 
+                    eval_func = eval_function, 
+                    consts = params['pso']['constants'][i],
+                    max_iter = params['pso']['max_iters'][i], 
+                    pop_size = params['pso']['pop_sizes'][i], 
+                    particle_size = params['pso']['particle_sizes'][i], 
+                    initial_particles = None, 
+                    l_bound = params['pso']['l_bounds'][i], 
+                    u_bound = params['pso']['u_bounds'][i],
+                    task = params['pso']['task'][i] )
+            dicionario = {'a':a, 'b':b, 'c':c}
+            
+        naosei.append (dicionario)
+               
 
 if __name__ == '__main__':
     #try:
