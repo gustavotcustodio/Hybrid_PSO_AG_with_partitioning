@@ -82,9 +82,9 @@ def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part,
         num_to_select = int (n_partitions * n_particles_part / n_subspaces)
 
         # Apply the selection operator in all particles
-        selected_particles = ga.selection (population, num_to_select) # mudar para índices***
+        selected = ga.roulette_selection (population, num_to_select) # mudar para índices***
 
-        splitted_pop = split_particles (selected_particles, 
+        splitted_pop = split_particles (selected, 
                                         n_particles_part, n_vars_part)
 
         # Apply crossover in all sub-partitions
@@ -94,11 +94,6 @@ def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part,
         # Apply mutation
         # Merge sub-partitions
         merged_pop = merge_particles (splitted_pop, n_subspaces)
-
-        print (population[:,-1])
-        print (merged_pop[:,-1])
-        
-        print ('==================================================================')
 
     return population
 

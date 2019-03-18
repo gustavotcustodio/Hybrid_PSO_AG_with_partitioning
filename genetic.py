@@ -1,9 +1,19 @@
 import numpy as np
 import random
 
-def selection (population, num_to_select):
-    indices = np.arange (population.shape[0])
-    return population [indices[0:num_to_select]]
+def roulette_selection (population, n_to_select, fitness_vals):
+    indices = []
+    f_norm = (fitness_vals - min (fitness_vals)) / (
+                max (fitness_vals) - min (fitness_vals))
+    f_norm =  f_norm / sum (f_norm)
+    f_cumsum = np.cumsum (f_norm)
+
+    for _ in range (n_to_select):
+        ''' get the index of the first element equal or lower 
+        than a random number from 0 to 1 '''
+        index = np.searchsorted (f_cumsum, random.random())
+        indices.append (index)        
+    return population [indices]
 
 def crossover (population, prob_cross, c):
     '''
@@ -25,29 +35,32 @@ def crossover (population, prob_cross, c):
         Population of chromosomes after crossover.
     '''
     size_pop = population.shape[0]
-
-    indices = np.where(
-        np.random.uniform (0,1,size_pop) < prob_cross)[0]
-
+    indices = np.where (
+                np.random.uniform (0, 1, size_pop) < prob_cross)[0]
+    # This is used if the chromosomes selected for crossover is an odd number.
+    extra_index = None
     # if only one chromosome is selected, there is no crossover  
     if indices.shape[0] <= 1:
         return population
-
-    # if a odd number of chromosomes is selected, don't include
-    # the last one in the crossover
+    ''' if a odd number of chromosomes is selected, don't include
+    the last one in the crossover '''
     if indices.shape[0] % 2 !=0:
         indices = indices[:-1]
-
-    cross_pop = np.copy (population)
-
+        extra_index = indices[-1]
     indices = indices.reshape ( int( indices.shape[0]/2 ), 2)
+
     for i in indices:
-        cross_pop[i[0]] = c*cross_pop[i[0]] + (1 - c)*cross_pop[i[1]]
-        cross_pop[i[1]] = c*cross_pop[i[1]] + (1 - c)*cross_pop[i[0]]
+        p0 = c * population[i[0]] + (1 - c) * population[i[1]]
+        p1 = c * population[i[1]] + (1 - c) * population[i[0]]
+        population = np.append (population, [p0], axis = 0)
+        population = np.append (population, [p1], axis = 0)
+    # if there is an odd number of chromosomes, the last one is cloned
+    if extra_index is not None:
+        population = np.append (population, 
+                                [population[extra_index]], axis = 0)
+    return population
 
-    return cross_pop
-
-def mutation (population, prob_mut, u_bound=1, l_bound=-1):
+def mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     '''
     Change the value of random positions in chromosomes.
 
@@ -85,12 +98,19 @@ def mutation (population, prob_mut, u_bound=1, l_bound=-1):
         random.uniform (l_bound, u_bound) for _ in range(n_mutations)]
 
     mut_population [indices_change] = changed_values
-
     return mut_population
 
 def run_ga (partitions, prob_cross, prob_mut, 
-                c = 0.5, l_bound = -1, u_bound = 1):
-                
-    for i in range (partitions.shape[0]):
+                fitness_func, c = 0.5, l_bound = -1, u_bound = 1):
+    '''
+    '''
+    for i in range (len(partitions)):
+        n_to_select = partitions[i].shape[0]
         cross_pop = crossover (partitions[i], prob_cross, c)
-        partitions[i] = mutation (cross_pop, prob_mut, u_bound, l_bound)
+
+        mut_pop = mutation (cross_pop, prob_mut)
+    
+        fitness_vals = np.apply_along_axis (
+                            fitness_func, 0, mut_pop)
+        partitions[i] = roulette_selection (
+                            partitions[i], n_to_select, fitness_vals)

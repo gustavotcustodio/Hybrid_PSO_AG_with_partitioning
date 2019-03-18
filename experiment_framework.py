@@ -11,7 +11,10 @@ def read_json (file_name):
     return params
 
 def run_hybrid_pso_ag_experiment (n_runs, params, eval_function, index_params):
+    #TODO
     i = index_params
+
+    df_results = pd.DataFrame ()
 
     hybrid_pso_ga.partitioned_pso ( 
         n_partitions = params ['hybrid']['n_partitions'][i], 
@@ -35,7 +38,8 @@ def run_hybrid_pso_ag_experiment (n_runs, params, eval_function, index_params):
 def run_pso_experiment (n_runs, params, eval_function, index_params):
     i = index_params
 
-    df_results = pd.DataFrame (columns = ['run', 'fitness', 'omega', 'c1', 'c2'])
+    df_results = pd.DataFrame (
+                    columns = ['run', 'fitness', 'omega', 'c1', 'c2'])
 
     for run in range(n_runs):
         _, _, best_evals = pso.run_pso ( 
@@ -48,13 +52,14 @@ def run_pso_experiment (n_runs, params, eval_function, index_params):
             u_bound = params['pso']['u_bounds'][i],
             task = params['pso']['task'][i] )
 
-        df_new_res = pd.DataFrame ({'run': [run + 1] * len(best_evals), 
-                        'fitness': best_evals, 
-                        'omega': [params['pso']['constants'][i][0]] * len(best_evals), 
-                        'c1': [params['pso']['constants'][i][1]] * len(best_evals), 
-                        'c2': [params['pso']['constants'][i][2]] * len(best_evals) })
-    df_results  = df_results.append (df_new_res, ignore_index=True)
+        df_new_res = pd.DataFrame (
+                    {'run': [run + 1] * len(best_evals), 
+                     'fitness': best_evals, 
+                     'omega': [params['pso']['constants'][i][0]] * len(best_evals), 
+                     'c1': [params['pso']['constants'][i][1]] * len(best_evals), 
+                     'c2': [params['pso']['constants'][i][2]] * len(best_evals) })
 
+        df_results  = df_results.append (df_new_res, ignore_index=True)
     return df_results
 
     
@@ -92,5 +97,5 @@ if __name__ == '__main__':
     #Value error exception
     except:
        # File not found exception
-       print ('Erro durante a execução dos experimentos')
+       print ('Error durring execution. Check the parameters in the json file')
 
