@@ -86,7 +86,7 @@ def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part,
                         population, n_particles, fitness_solutions)
 
         # Split in sub-partitions and apply the crossover in each.
-        for chrom in range (n_subpops):
+        for chrom in range (0, n_particles, n_particles_part):
             for var in range (0, n_vars, n_vars_part):
                 # index of last solution in subpop
                 last_chrom = chrom + n_particles_part
@@ -106,7 +106,7 @@ def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part,
 
         # Apply mutation
         
-        
+
     return population
 
 
