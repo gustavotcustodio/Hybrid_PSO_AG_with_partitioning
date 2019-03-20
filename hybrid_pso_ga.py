@@ -63,38 +63,50 @@ def merge_particles (partitions, n_subspaces):
 
 def partitioned_pso (n_partitions, n_particles, n_vars, n_particles_part, 
     n_vars_part, consts, eval_func, max_iters_hybrid=100, max_iters_pso=100,
-    u_bound=1.0, l_bound=-1.0, task ='min', prob_cross = 0.5, prob_mut = 0.02, c = 0.5):
+    u_bound=1.0, l_bound=-1.0, task ='min', prob_cross = 0.5, prob_mut = 0.02, 
+    c = 0.5):
     '''
     '''                
     population = None
+    n_subpops = int (n_particles / n_particles_part)
+    n_subspaces = int (n_vars / n_vars_part)
 
-    for _ in range(max_iters_hybrid):
-                        
+    for _ in range(max_iters_hybrid):         
         # Apply the standard PSO to all particles 
         population, _, _ = pso.run_pso (
                             eval_func, consts, max_iter= max_iters_pso, 
                             pop_size= n_particles, particle_size= n_vars, 
                             initial_particles= population)
 
-        n_subspaces = int (population.shape[1] / n_vars_part)
+        # Evaluate all candidate solutions
+        fitness_solutions = np.apply_along_axis (eval_func, 0, population)
 
-        # Number of particles to select
-        num_to_select = int (n_partitions * n_particles_part / n_subspaces)
+        # Apply the selection operator in all solutions
+        selected = ga.roulette_selection (
+                        population, n_particles, fitness_solutions)
 
-        # Apply the selection operator in all particles
-        selected = ga.roulette_selection (population, num_to_select) # mudar para índices***
+        # Split in sub-partitions and apply the crossover in each.
+        for chrom in range (n_subpops):
+            for var in range (0, n_vars, n_vars_part):
+                # index of last solution in subpop
+                last_chrom = chrom + n_particles_part
+                # index of last variable in subspace
+                last_var = var + n_vars_part
 
-        splitted_pop = split_particles (selected, 
-                                        n_particles_part, n_vars_part)
+                subpop = population [chrom:last_chrom, var:last_var]
+                # Get the offsprings and their parents
+                offsprings, parents = ga.crossover (subpop, prob_cross, c)
 
-        # Apply crossover in all sub-partitions
-        for i in range(n_partitions):
-            splitted_pop[i] = ga.crossover (splitted_pop[i], prob_cross, c)
+                ''' Since the offsprings are related to a subspace, they 
+                have less variables than a candidate solution. Therefore, 
+                the parents are copied and the variables related to the 
+                offsprings are updated.'''
+                new_chroms = np.copy (population [chrom:last_chrom][parents])
+                new_chroms [:,var:last_var] = offsprings
 
         # Apply mutation
-        # Merge sub-partitions
-        merged_pop = merge_particles (splitted_pop, n_subspaces)
-
+        
+        
     return population
 
 

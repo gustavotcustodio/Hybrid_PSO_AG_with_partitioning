@@ -86,8 +86,8 @@ def mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     mut_population = np.copy (population)
 
     # create 2d array with random values
-    random_2d_array = np.random.uniform (
-                        0, 1, size=(n_chromosomes, n_dims))
+    random_2d_array = np.random.uniform (0, 1, 
+                        size=(n_chromosomes, n_dims))
 
     # get indices in 2d array with lower values than prob_mat
     indices_change = np.where (random_2d_array < prob_mut)
