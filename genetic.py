@@ -22,7 +22,7 @@ def crossover (population, prob_cross, c):
     Attributes
     ----------
     population: 2d array
-        Chromosomes representing candidate solutions.
+        Chromosomes representing candidate solutions (parents).
     prob_cross: float
         Probability of occurring a crossover between
         two chromosomes ranging from 0 to 1.
@@ -31,34 +31,36 @@ def crossover (population, prob_cross, c):
 
     Returns
     -------
-    cross_pos: 2d array
-        Population of chromosomes after crossover.
+    offsprings: 2d array
+        Chromosomes resulting from the parents' crossover.
     '''
-    size_pop = population.shape[0]
-    indices = np.where (
-                np.random.uniform (0, 1, size_pop) < prob_cross)[0]
-    # This is used if the chromosomes selected for crossover is an odd number.
-    extra_index = None
+    pop_size = population.shape[0]
+    parents = np.where (np.random.uniform (0, 1, pop_size) < prob_cross)[0]
     # if only one chromosome is selected, there is no crossover  
-    if indices.shape[0] <= 1:
-        return population
-    ''' if a odd number of chromosomes is selected, don't include
-    the last one in the crossover '''
-    if indices.shape[0] % 2 !=0:
-        indices = indices[:-1]
-        extra_index = indices[-1]
-    indices = indices.reshape ( int( indices.shape[0]/2 ), 2)
+    if parents.size == 0:
+        return None, None
 
+    offsprings = np.empty( shape= (len(parents), population.shape[1]) )
+    ''' if an odd number of chromosomes is selected, 
+    don't include the last one in the crossover '''
+    if len (parents) % 2 !=0:
+        last_parent = parents[-1]
+        indices = parents[:-1]
+    else: 
+        last_parent = None
+        indices = parents
+
+    index_off = 0
+    indices = indices.reshape ( int( indices.shape[0]/2 ), 2)
     for i in indices:
-        p0 = c * population[i[0]] + (1 - c) * population[i[1]]
-        p1 = c * population[i[1]] + (1 - c) * population[i[0]]
-        population = np.append (population, [p0], axis = 0)
-        population = np.append (population, [p1], axis = 0)
-    # if there is an odd number of chromosomes, the last one is cloned
-    if extra_index is not None:
-        population = np.append (population, 
-                                [population[extra_index]], axis = 0)
-    return population
+        p0, p1 = population[i[0]], population[i[1]]
+        offsprings [index_off]     = c * p0 + (1 - c) * p1
+        offsprings [index_off + 1] = c * p1 + (1 - c) * p0
+        index_off += 2
+    # if there is an odd number of parents, the last one is cloned
+    if last_parent is not None:
+        offsprings[-1] = np.copy (population [last_parent])
+    return offsprings, parents
 
 def mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     '''
@@ -82,35 +84,33 @@ def mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     '''
     n_chromosomes = population.shape[0]
     n_dims = population.shape[1]
-    
     mut_population = np.copy (population)
 
     # create 2d array with random values
-    random_2d_array = np.random.uniform (0, 1, 
-                        size=(n_chromosomes, n_dims))
+    random_2d_array = np.random.uniform (0, 1, size=(n_chromosomes, n_dims))
 
-    # get indices in 2d array with lower values than prob_mat
+    # get indices in 2d array with lower values than prob_mut
     indices_change = np.where (random_2d_array < prob_mut)
-
     n_mutations = indices_change[0].shape[0]
 
-    changed_values = [
-        random.uniform (l_bound, u_bound) for _ in range(n_mutations)]
-
+    changed_values = [random.uniform (l_bound, u_bound
+                                        ) for _ in range(n_mutations)]
     mut_population [indices_change] = changed_values
     return mut_population
 
-def run_ga (partitions, prob_cross, prob_mut, 
-                fitness_func, c = 0.5, l_bound = -1, u_bound = 1):
+def run_single_ga_iter (population, prob_cross, prob_mut, fitness_func, 
+                        c = 0.5, l_bound = -1, u_bound = 1):
     '''
     '''
-    for i in range (len(partitions)):
-        n_to_select = partitions[i].shape[0]
-        cross_pop = crossover (partitions[i], prob_cross, c)
+    ga_pop = np.copy (population)
+    n_to_select = ga_pop.shape[0]
 
-        mut_pop = mutation (cross_pop, prob_mut)
-    
-        fitness_vals = np.apply_along_axis (
-                            fitness_func, 0, mut_pop)
-        partitions[i] = roulette_selection (
-                            partitions[i], n_to_select, fitness_vals)
+    offsprings, parents = crossover (ga_pop, prob_cross, c)
+    if offsprings is not None:
+        ga_pop = np.append (population, offsprings, axis = 0)
+    #mut_pop = mutation (population, prob_mut)
+    print (ga_pop)
+    print (parents)
+
+    fitness_vals = np.apply_along_axis (fitness_func, 0, ga_pop)
+    return roulette_selection (ga_pop, n_to_select, fitness_vals)
