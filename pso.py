@@ -120,7 +120,6 @@ def get_best_particle (particles, evals_parts, task = 'min'):
         i_max = np.argmax (evals_parts)
         return np.copy (particles [i_max]), evals_parts[i_max]
 
-
 def update_velocities (particles, best_parts, global_best, 
                         velocities, consts):
     '''
@@ -196,7 +195,7 @@ def update_best_solutions (
 
 
 def update_global_best (
-        particles, global_best, evals_parts, eval_global, task='min'):
+    particles, global_best, evals_parts, eval_global, task='min'):
     '''
     Update the best known global solution, if a better particle is found.
 
@@ -221,16 +220,12 @@ def update_global_best (
     '''
     if task =='min':
         index_best = np.argmin (evals_parts)
-
         if evals_parts [index_best] < eval_global:
-            return np.copy (
-                     particles[index_best] ), evals_parts[index_best]
+            return np.copy (particles[index_best] ), evals_parts[index_best]
     else:
         index_best = np.argmax (evals_parts)
-
         if evals_parts [index_best] > eval_global:
-            return np.copy (
-                     particles[index_best] ), evals_parts[index_best]
+            return np.copy (particles[index_best] ), evals_parts[index_best]
 
     return global_best, eval_global
 
@@ -272,8 +267,7 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
         Evalulations for global best solution in each iteration.
     '''
     if initial_particles is None:
-        particles = generate_particles (
-                        pop_size, particle_size, l_bound, u_bound)
+        particles = generate_particles (pop_size, particle_size, l_bound, u_bound)
     else:
         particle_size = initial_particles.shape[1]
         pop_size = initial_particles.shape[0]
@@ -304,9 +298,7 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
         
         global_solutions.append (global_best)
         best_evals.append (eval_global)
-        
     return particles, np.array (global_solutions), best_evals
-
 
 if __name__ == '__main__':
     selection = np.array([0,1,4,6])
