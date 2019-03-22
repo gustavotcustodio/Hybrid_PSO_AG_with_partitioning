@@ -99,7 +99,22 @@ def mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     return mut_population
 
 def run_single_ga_iter (population, prob_cross, prob_mut, fitness_func, 
-                        c = 0.5, l_bound = -1, u_bound = 1):
+    c = 0.5, l_bound = -1, u_bound = 1):
+    '''
+    '''
+    ga_pop = np.copy (population)
+    n_to_select = ga_pop.shape[0]
+
+    offsprings, _ = crossover (ga_pop, prob_cross, c)
+    if offsprings is not None:
+        ga_pop = np.append (ga_pop, offsprings, axis = 0)
+    ga_pop = mutation (ga_pop, prob_mut)
+
+    fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
+    return roulette_selection (ga_pop, n_to_select, fitness_vals)
+
+def run_ga (population, prob_cross, prob_mut, fitness_func, 
+    c = 0.5, l_bound = -1, u_bound = 1):
     '''
     '''
     ga_pop = np.copy (population)

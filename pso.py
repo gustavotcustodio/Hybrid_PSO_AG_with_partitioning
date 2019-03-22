@@ -120,8 +120,8 @@ def get_best_particle (particles, evals_parts, task = 'min'):
         i_max = np.argmax (evals_parts)
         return np.copy (particles [i_max]), evals_parts[i_max]
 
-def update_velocities (particles, best_parts, global_best, 
-                        velocities, consts):
+def update_velocities (
+    particles, best_parts, global_best, velocities, consts):
     '''
     Parameters
     ----------
@@ -161,9 +161,12 @@ def update_positions (positions, velocities):
     '''
     return positions + velocities
 
+def limit_bounds (array, l_bound, u_bound):
+    array [np.where(array > u_bound)[0]] = u_bound
+    array [np.where(array < l_bound)[0]] = l_bound
 
 def update_best_solutions (
-        positions, best_parts, evals_parts, evals_best, task='min'):
+    positions, best_parts, evals_parts, evals_best, task='min'):
     '''
     Update the best known positions of PSO particles with the
     new best positions found.
@@ -231,7 +234,7 @@ def update_global_best (
 
 
 def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
-            initial_particles = None, l_bound=-1.0, u_bound=1.0, task='min'):
+    initial_particles = None, l_bound=-1.0, u_bound=1.0, task='min'):
     '''
     Run the PSO algorithm for max_iter iterations.
 
