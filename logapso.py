@@ -4,9 +4,12 @@ import pso
 import genetic as ga
 import random 
 
-def naoseionomedisso (eval_func, best_parts, evals_best, task, 
+def ga_random_walk (eval_func, best_parts, evals_best, task, 
     ind_apply_ga, prob_run_ga, step_size, genetic_alg):
     '''
+    Executes the genetic algorithm to move the best position found by 
+    particle i in a random direction. If the new position found is a better 
+    solution than best_parts[i], replace best_parts[i] by the best solution.
     '''
     op = min if task == 'min' else max
 
@@ -62,7 +65,7 @@ def run_logapso (eval_func, consts, max_iter=100, pop_size=100, particle_size=10
 
         # Indices of best solutions to apply the GA
         ind_apply_ga = np.unique (np.where(best_copy != best_parts)[0])
-        best_parts [ind_apply_ga] =  naoseionomedisso
+        best_parts [ind_apply_ga] =  ga_random_walk
 
         global_best, eval_global = pso.update_global_best (particles, global_best, 
                                             evals_parts, eval_global, task)

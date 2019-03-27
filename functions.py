@@ -19,8 +19,18 @@ def griewank(x):
             ))
     return  term1 - term2 + 1
 
+def ackley (x):
+    n = len (x)
+    term1 = -20 * math.exp (-0.2 * np.sqrt(sum(x**2)/n))
+    term2 = -math.exp ( sum (np.cos(2*math.pi*x))/n )
+    return term1 + term2 + 20 + math.e
+
+def schwefel (x):
+    abs_x = np.abs (x)
+    return  x * np.sin (np.sqrt(abs_x)) 
+
 def get_function (function_name):
-    if function_name == 'square_sum':
+    if function_name =='square_sum':
         return square_sum
     elif function_name == 'rosenbrock':
         return rosenbrock
@@ -30,4 +40,5 @@ def get_function (function_name):
         return griewank
     else:
         return None
+    
     
