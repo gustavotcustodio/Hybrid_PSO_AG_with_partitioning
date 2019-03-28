@@ -1,6 +1,17 @@
 import numpy as np
 import random
 
+def invert_fitness (fitness_vals):
+    '''
+    When the GA problem is to minimize an objective function, invert the
+    fitness values. therefore, the particles with lower fitness have a
+    higher probebility of being selected for the next generation.
+    '''
+    # Normalize values between 1 and 2
+    fitness_norm = (fitness_vals - min (fitness_vals)) / (
+                    max (fitness_vals) - min (fitness_vals)) + 1.0
+    return 1.0 / fitness_norm
+
 def roulette_selection (population, n_to_select, fitness_vals):
     indices = []
     f_norm = (fitness_vals - min (fitness_vals)) / (
@@ -94,12 +105,12 @@ def mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     n_mutations = indices_change[0].shape[0]
 
     changed_values = [random.uniform (l_bound, u_bound
-                                        ) for _ in range(n_mutations)]
+                        ) for _ in range(n_mutations)]
     mut_population [indices_change] = changed_values
     return mut_population
 
-def run_single_ga_iter (population, prob_cross, prob_mut, fitness_func, 
-    c = 0.5, l_bound = -1, u_bound = 1):
+def run_single_ga_iter (population, prob_cross, prob_mut, 
+    fitness_func, c = 0.5, l_bound = -1, u_bound = 1):
     '''
     '''
     ga_pop = np.copy (population)
@@ -113,17 +124,26 @@ def run_single_ga_iter (population, prob_cross, prob_mut, fitness_func,
     fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
     return roulette_selection (ga_pop, n_to_select, fitness_vals)
 
-def run_ga (population, prob_cross, prob_mut, fitness_func, 
-    c = 0.5, l_bound = -1, u_bound = 1):
+def run_ga (pop_size, chrom_size, n_gens, fitness_func, prob_cross, 
+    c, prob_mut, l_bound = -1, u_bound = 1, task = 'min'):
     '''
     '''
-    ga_pop = np.copy (population)
-    n_to_select = ga_pop.shape[0]
+    ga_pop = np.random.uniform (l_bound, u_bound, size=(pop_size, chrom_size))
 
-    offsprings, _ = crossover (ga_pop, prob_cross, c)
-    if offsprings is not None:
-        ga_pop = np.append (ga_pop, offsprings, axis = 0)
-    ga_pop = mutation (ga_pop, prob_mut)
+    for _ in n_gens:
+        offsprings, _ = crossover (ga_pop, prob_cross, c)
+        if offsprings is not None:
+            ga_pop = np.append (ga_pop, offsprings, axis = 0)
+
+        ga_pop = mutation (ga_pop, prob_mut)
+        fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
+        # If we want to minimize the fitness, the chromosomes with higher
+        # fitness values have them inverted to select the best.
+        if task == 'min': 
+            fitness_vals = invert_fitness (fitness_vals)
+
+        ga_pop = roulette_selection (ga_pop, pop_size, fitness_vals)
 
     fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
-    return roulette_selection (ga_pop, n_to_select, fitness_vals)
+    best_chrom = np.argmin (fitness_vals)
+    return ga_pop [best_chrom]

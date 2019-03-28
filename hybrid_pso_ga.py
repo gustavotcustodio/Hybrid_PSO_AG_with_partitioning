@@ -88,38 +88,41 @@ def split_and_crossover (population, n_particles_part, n_vars_part, prob_cross, 
                     cross_pop = np.append (cross_pop, new_chroms, axis=0)
     return cross_pop
 
-def run_hpsoga (n_particles, n_vars, n_particles_part, n_vars_part, 
-    consts, eval_func, max_iters_hybrid=100, max_iters_pso=100, u_bound=1.0, 
-    l_bound=-1.0, task ='min', prob_cross = 0.6, prob_mut = 0.01, c = 0.5):
+def run_hpsoga (pso_params, ga_params, n_particles_part, n_vars_part, max_iters=100):
     '''
     '''                
     population = None
-    for _ in range(max_iters_hybrid):         
+    for _ in range (max_iters):         
         # Apply the standard PSO to all particles 
         population,_,_ = pso.run_pso (
-                            eval_func, consts, max_iter= max_iters_pso, 
-                            pop_size= n_particles, particle_size= n_vars, 
-                            initial_particles= population)
+                            eval_func= pso.eval_func, 
+                            consts= pso_params.consts, 
+                            max_iter= pso_params.max_iters, 
+                            pop_size = pso_params.pop_size, 
+                            particle_size= pso_params.particle_size, 
+                            initial_particles= population,
+                            u_bound = pso_params.u_bound,
+                            l_bound = pso_params.l_bound)
         # Evaluate all candidate solutions
         fitness_solutions = np.apply_along_axis (eval_func, 1, population)
         # Apply the selection operator in all solutions
         selected_pop = ga.roulette_selection (
-                            population, n_particles, fitness_solutions)
-        print (fitness_solutions)
-        print (selected_pop.shape)
+                            population, pso_params.pop_size, fitness_solutions)
         # Split population in sub-partitions and apply the crossover in each one.
         new_particles = split_and_crossover (selected_pop, n_particles_part, 
-                                             n_vars_part, prob_cross, c)
+                            n_vars_part, ga_params.prob_cross, ga_params.c)
+
         if new_particles is not None:
             # Add new candidate solutions to population
             selected_pop = np.append (selected_pop, new_particles, axis = 0)
         # Apply mutation
-        population = ga.mutation (selected_pop, prob_mut, u_bound, l_bound)
+        population = ga.mutation (selected_pop, ga_params.prob_mut, 
+                            pso_params.u_bound, pso_params.l_bound)
     return population
 
 if __name__ == '__main__':
     consts = [0.7, 1.4, 1.4]
     eval_func = lambda p: np.sum (p**2)
 
-    run_hpsoga (n_particles=6, n_vars=9, n_particles_part=2, 
-                n_vars_part=3, consts=consts, eval_func=eval_func)
+    #run_hpsoga (n_particles=6, n_vars=9, n_particles_part=2, 
+    #            n_vars_part=3, consts=consts, eval_func=eval_func)
