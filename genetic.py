@@ -7,9 +7,9 @@ def invert_fitness (fitness_vals):
     fitness values. therefore, the particles with lower fitness have a
     higher probebility of being selected for the next generation.
     '''
-    # Normalize values between 1 and 2
+    # Normalize values between 1.0 and 2.0
     fitness_norm = (fitness_vals - min (fitness_vals)) / (
-                    max (fitness_vals) - min (fitness_vals)) + 1.0
+                    max (fitness_vals) - min (fitness_vals) + 1.0) + 1.0
     return 1.0 / fitness_norm
 
 def roulette_selection (population, n_to_select, fitness_vals):
@@ -73,7 +73,7 @@ def crossover (population, prob_cross, c):
         offsprings[-1] = np.copy (population [last_parent])
     return offsprings, parents
 
-def mutation (population, prob_mut, u_bound = 1, l_bound = -1):
+def mutation (population, prob_mut, l_bound = -1, u_bound = 1):
     '''
     Change the value of random positions in chromosomes.
 
@@ -130,7 +130,7 @@ def run_ga (pop_size, chrom_size, n_gens, fitness_func, prob_cross,
     '''
     ga_pop = np.random.uniform (l_bound, u_bound, size=(pop_size, chrom_size))
 
-    for _ in n_gens:
+    for _ in range(n_gens):
         offsprings, _ = crossover (ga_pop, prob_cross, c)
         if offsprings is not None:
             ga_pop = np.append (ga_pop, offsprings, axis = 0)

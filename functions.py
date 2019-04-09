@@ -7,10 +7,10 @@ def square_sum(x):
     return sum(np.square(x))	
 
 def rosenbrock(x):
-    # 
+    # -100 to 100
     x2 = np.array(x[1:])
-    x1 = np.array(x[:len(x)-1]) 
-    return sum(100 * np.square(x2-np.square(x1)) + np.square(x1-1))
+    x1 = np.array(x[:-1]) 
+    return sum (100 * (x2 - x1 ** 2) ** 2 + (x1 - 1) ** 2)
 
 def schwefel_222 (x):
     # -10 to 10
@@ -23,7 +23,7 @@ def quartic_noise (x):
     return sum (indices * x**4) + random.random()
 
 def rastrigin(x):
-    #
+    # -100 to 100
     return sum(np.square(x) - 10 * np.cos(2 * math.pi * x) + 10)
 
 def griewank(x):
@@ -48,9 +48,9 @@ def schwefel_226 (x):
     return const * len(x) - sum (x * np.sin (np.sqrt(absx)))
 
 def u (a, k, m, x_i):
-    if x_i > a: 
+    if   x_i >  a: 
         return k * ( x_i - a)**m
-    elif x_i < a:
+    elif x_i < -a:
         return k * (-x_i - a)**m
     else:
         return 0    
@@ -62,9 +62,9 @@ def penalty_1 (x):
     PI = math.pi
     y = 1.25 + x/4
 
-    term1 = 10 * PI * math.sin (PI * y[0])** 2 / n
-    term2 = sum ((y[:-1] - 1)** 2 * (1 + 10* math.sin (PI * y[1:])** 2))
-    term3 = (y[-1] - 1) ** 2
+    term1 = 10 * PI / n * math.sin (PI * y[0])**2
+    term2 = sum ((y[:-1] - 1)**2 * (1 + 10* np.sin (PI * y[1:])**2))
+    term3 = (y[-1] - 1)**2
     term4 = sum ([u (a, k, m, x_i) for x_i in x])
     return term1 + term2 + term3 + term4
     
@@ -73,8 +73,8 @@ def penalty_2 (x):
     k, m, a = 100, 4, 5
     PI = math.pi   
 
-    term1 = 0.1 * math.sin (3*PI*x[0]) **2
-    term2 = sum ((x - 1) **2 * (1 + np.sin (3*PI*x+1) **2))
+    term1 = 0.1 * math.sin (3*PI*x[0])** 2
+    term2 = sum ( (x - 1)**2 * (1 + np.sin (3*PI*x+1)**2) )
     term3 = (x[-1] - 1) **2 * (1 + math.sin (2*PI*x[-1])) **2
     term4 = sum ([u (a, k, m, x_i) for x_i in x])
     return term1 + term2 + term3 + term4
@@ -104,3 +104,5 @@ def get_function (function_name):
         return None
     
     
+if __name__ == '__main__':
+    print (rastrigin (np.array([0,0,0])) )

@@ -1,5 +1,5 @@
 import numpy as np
-
+import functions
 
 def generate_single_array (n_dimensions, l_bound, u_bound):
     '''
@@ -96,7 +96,6 @@ def evaluate_particles (eval_func, particles):
         Evaluation of PSO particles.
     '''
     evals = [eval_func (p) for p in particles]
-
     return np.array (evals)
 
 
@@ -114,14 +113,14 @@ def get_best_particle (particles, evals_parts, task = 'min'):
         Evaluation of best particle.
     '''
     if task == 'min':    
-        i_min = np.argmax (evals_parts)
+        i_min = np.argmin (evals_parts)
         return np.copy (particles [i_min]), evals_parts[i_min]
     if task == 'max':    
         i_max = np.argmax (evals_parts)
         return np.copy (particles [i_max]), evals_parts[i_max]
 
-def update_velocities (
-    particles, best_parts, global_best, velocities, consts):
+def update_velocities (particles, best_parts, global_best, velocities, 
+    consts):
     '''
     Parameters
     ----------
@@ -162,11 +161,11 @@ def update_positions (positions, velocities):
     return positions + velocities
 
 def limit_bounds (array, l_bound, u_bound):
-    array [np.where(array > u_bound)[0]] = u_bound
-    array [np.where(array < l_bound)[0]] = l_bound
+    array [np.argwhere (array > u_bound)] = u_bound
+    array [np.argwhere (array < l_bound)] = l_bound
 
-def update_best_solutions (
-    positions, best_parts, evals_parts, evals_best, task='min'):
+def update_best_solutions (positions, best_parts, evals_parts, evals_best, 
+    task='min'):
     '''
     Update the best known positions of PSO particles with the
     new best positions found.
@@ -197,8 +196,8 @@ def update_best_solutions (
                                 evals_parts [indices_better])
 
 
-def update_global_best (
-    particles, global_best, evals_parts, eval_global, task='min'):
+def update_global_best (particles, global_best, evals_parts, eval_global, 
+    task='min'):
     '''
     Update the best known global solution, if a better particle is found.
 
@@ -233,16 +232,16 @@ def update_global_best (
     return global_best, eval_global
 
 
-def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
-    initial_particles = None, l_bound=-1.0, u_bound=1.0, task='min'):
+def run_pso (eval_func, consts, max_iters = 100, pop_size=100, particle_size=10,
+    initial_particles = None, l_bound=-100.0, u_bound=100.0, task='min'):
     '''
-    Run the PSO algorithm for max_iter iterations.
+    Run the PSO algorithm for max_iters iterations.
 
     Parameters
     ----------
     eval_func: function_1_param
         Function to evaluate particles.
-    max_iter: int
+    max_iters: int
         Number of PSO iterations.
     consts: list [float]
         Constants for updating PSO velocity.
@@ -266,7 +265,7 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
         2d array with each particle in a row after the PSO execution.
     global_solutions: 2d array
         Best global solutions found by PSO in each iter.
-    best_evals: list[float]
+    global_evals: list[float]
         Evalulations for global best solution in each iteration.
     '''
     if initial_particles is None:
@@ -277,43 +276,35 @@ def run_pso (eval_func, consts, max_iter = 100, pop_size=100, particle_size=10,
         particles = initial_particles
 
     evals_parts = evaluate_particles (eval_func, particles)
-    
+
     best_parts = np.copy (particles)
     evals_best = np.copy (evals_parts)
-
     global_best, eval_global = get_best_particle (particles, evals_parts, task)
 
     velocities = generate_velocities (pop_size, particle_size, l_bound, u_bound)
 
-    global_solutions, best_evals = [], []
-
-    for _ in range (max_iter):
+    global_solutions, global_evals = [], []
+    for _ in range (max_iters):
         velocities = update_velocities (
                         particles, best_parts, global_best, velocities, consts)
-        particles  = update_positions  (particles, velocities)
+
+        particles = update_positions (particles, velocities)    
         evals_parts = evaluate_particles (eval_func, particles)
 
         update_best_solutions (
                     particles, best_parts, evals_parts, evals_best, task)
-
         global_best, eval_global = update_global_best (
                     particles, global_best, evals_parts, eval_global, task)
         
         global_solutions.append (global_best)
-        best_evals.append (eval_global)
-    return particles, np.array (global_solutions), best_evals
+        global_evals.append (eval_global)
+    return particles, best_parts, np.array (global_solutions), global_evals
 
 if __name__ == '__main__':
-    selection = np.array([0,1,4,6])
 
-    selection = selection.reshape( int(selection.shape[0]/2), 2)
-
-    n_particles = 6
-    n_dims = 4
-    n_subpops = 2
-    n_subspaces = 2
     consts = [0.7, 1.4, 1.4]
-    eval_func = lambda p: np.sum (p**2)
+    eval_func = functions.rastrigin
 
     particles, global_solutions, best_evals = run_pso (
-                    eval_func, consts, max_iter=50, pop_size=10)
+        eval_func, consts, max_iters=100, pop_size=100, particle_size=30
+    )
