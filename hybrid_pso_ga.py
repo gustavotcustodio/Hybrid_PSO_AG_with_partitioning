@@ -1,9 +1,7 @@
 import numpy as np
-
 import functions
 import genetic as ga
 import pso
-
 
 def split_particles (particles, n_particles_part, n_vars_part):
     '''
@@ -101,7 +99,7 @@ def run_hpsoga (pso_params, ga_params, eval_func, n_particles_part,
     eval_global = float('inf') if pso_params['task'] == 'min' else -float('inf')
     for _ in range (max_iters):         
         # Apply the standard PSO to all particles 
-        population,_,_,_= pso.run_pso (
+        population,_,_= pso.run_pso (
                             eval_func = eval_func,
                             consts = pso_params['constants'],
                             max_iters = pso_params['max_iters'],
@@ -123,7 +121,6 @@ def run_hpsoga (pso_params, ga_params, eval_func, n_particles_part,
         # Split population in sub-partitions and apply the crossover in each one.
         new_particles = split_and_crossover (selected_pop, n_particles_part, 
                             n_vars_part, ga_params['prob_cross'], ga_params['c'])
-
         if new_particles is not None:
             # Add new candidate solutions to population
             selected_pop = np.append (selected_pop, new_particles, axis = 0)

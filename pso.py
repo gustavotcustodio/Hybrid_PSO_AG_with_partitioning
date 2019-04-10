@@ -21,10 +21,8 @@ def generate_single_array (n_dimensions, l_bound, u_bound):
     '''
     return np.random.uniform (l_bound, u_bound, n_dimensions)
 
-
 def copy_particle (particle):
     return np.copy (particle)
-
 
 def generate_particles (pop_size, particle_size, l_bound, u_bound):
     '''
@@ -52,7 +50,6 @@ def generate_particles (pop_size, particle_size, l_bound, u_bound):
         for _ in range(pop_size)]
     )
     return particles
-
 
 def generate_velocities (pop_size, particle_size, l_bound, u_bound):
     '''
@@ -85,7 +82,6 @@ def generate_velocities (pop_size, particle_size, l_bound, u_bound):
         for _ in range(pop_size)])
     return velocities
 
-
 def evaluate_particles (eval_func, particles):
     '''
     Evaluate particles using an evaluation function.
@@ -97,7 +93,6 @@ def evaluate_particles (eval_func, particles):
     '''
     evals = [eval_func (p) for p in particles]
     return np.array (evals)
-
 
 def get_best_particle (particles, evals_parts, task = 'min'):
     '''
@@ -122,10 +117,11 @@ def get_best_particle (particles, evals_parts, task = 'min'):
 def update_velocities (particles, best_parts, global_best, velocities, 
     consts):
     '''
+    Update velocity values for PSO particles.
+
     Parameters
     ----------
     particles: 2d array
-
     best_parts: 2d array
     global_best: 1d array
     velocities: 2d array
@@ -298,7 +294,7 @@ def run_pso (eval_func, consts, max_iters = 100, pop_size=100, particle_size=10,
         
         global_solutions.append (global_best)
         global_evals.append (eval_global)
-    return particles, best_parts, np.array (global_solutions), global_evals
+    return particles, np.array (global_solutions), global_evals
 
 if __name__ == '__main__':
 

@@ -126,6 +126,8 @@ def run_experiments ():
         elif alg == 'logapso':
             df_results = run_logapso_experiment (
                             n_runs, params, eval_function, index_params)
+        elif alg == 'hgapso':
+            return None
 
         save_results (alg, index_params, df_results)
 
