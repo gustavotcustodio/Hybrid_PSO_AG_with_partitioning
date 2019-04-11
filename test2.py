@@ -6,8 +6,7 @@ import genetic
 class TestGA (unittest.TestCase):
     def test_crossover (self):
         population = np.array ([[0.1, 0.4, 0.4], [0.2, 0.3, 0.3], 
-                                [0.5, 0.7, 0.8], [0.3, 0.9, 0.9],
-                                [0.2, 0.9, 0.9]] )
+            [0.5, 0.7, 0.8], [0.3, 0.9, 0.9], [0.2, 0.9, 0.9]] )
         self.assertIsNone (genetic.crossover (population, 0, 0)[0])
 
         prob_cross = 1.0
@@ -16,6 +15,13 @@ class TestGA (unittest.TestCase):
 
         self.assertTrue (cross_pop.shape == population.shape)
         np.testing.assert_array_equal (population[parents], population)
+
+    def test_random_arith_crossover (self):
+        population = np.array ([[0.1, 0.4, 0.4], [0.2, 0.3, 0.3], 
+            [0.5, 0.7, 0.8], [0.3, 0.9, 0.9], [0.2, 0.9, 0.9]] )
+        cross_pop = genetic.random_arith_crossover (population)
+
+        self.assertTrue (cross_pop.shape == population.shape)
     
     def test_mutation (self):
         chromosomes = np.array (

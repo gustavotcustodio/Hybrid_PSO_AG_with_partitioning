@@ -26,6 +26,15 @@ def roulette_selection (population, n_to_select, fitness_vals):
         indices.append (index)        
     return population [indices]
 
+def random_arith_crossover (population):
+    '''
+    '''
+    rd = np.random.uniform (0, 1, size = (population.shape))
+    cross_pop  = rd[:-1] * population[:-1] + (1-rd[:-1]) * population[1:]
+    # Last chromosome
+    last_chrom = rd [-1] * population [-1] + (1-rd [-1]) * population[0]
+    return np.append (cross_pop, [last_chrom], axis = 0)
+
 def crossover (population, prob_cross, c):
     '''
     Combine multiple chromosomes to genereate new ones.
@@ -54,7 +63,7 @@ def crossover (population, prob_cross, c):
     offsprings = np.empty( shape= (len(parents), population.shape[1]) )
     ''' if an odd number of chromosomes is selected, 
     don't include the last one in the crossover '''
-    if len (parents) % 2 !=0:
+    if len (parents) % 2 != 0:
         last_parent = parents[-1]
         indices = parents[:-1]
     else: 
@@ -107,6 +116,22 @@ def mutation (population, prob_mut, l_bound = -1, u_bound = 1):
     changed_values = [random.uniform (l_bound, u_bound
                         ) for _ in range(n_mutations)]
     mut_population [indices_change] = changed_values
+    return mut_population
+
+def normal_mutation (population, prob_mut, u_bound = 1, l_bound = -1):
+    n_chromosomes = population.shape[0]
+    n_dims = population.shape[1]
+    mut_population = np.copy (population)
+
+    # create 2d array with random values
+    random_2d_array = np.random.uniform (0, 1, size=(n_chromosomes, n_dims))
+
+    # get indices in 2d array with lower values than prob_mut
+    indices_change = np.where (random_2d_array < prob_mut)
+    # random normal distribution number
+    r = random.gauss(mu=0, sigma=1) * random.random (l_bound, u_bound)
+    mut_population [indices_change] = mut_population[indices_change] + r
+
     return mut_population
 
 def run_single_ga_iter (population, prob_cross, prob_mut, 
