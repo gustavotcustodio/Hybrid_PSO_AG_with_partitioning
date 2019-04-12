@@ -12,6 +12,15 @@ def invert_fitness (fitness_vals):
                     max (fitness_vals) - min (fitness_vals) + 1.0) + 1.0
     return 1.0 / fitness_norm
 
+def selection (population, fitness_vals, n_to_select):
+    '''
+    Select the top n_to_select chromosomes according to their 
+    fitness values
+    '''
+    pop_size = population.shape[0]
+    top_indices = np.argsort (fitness_vals) [:n_to_select]
+    return population [top_indices], top_indices
+
 def roulette_selection (population, n_to_select, fitness_vals):
     indices = []
     f_norm = (fitness_vals - min (fitness_vals)) / (
