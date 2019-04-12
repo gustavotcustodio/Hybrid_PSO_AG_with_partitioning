@@ -187,9 +187,9 @@ def update_best_solutions (positions, best_parts, evals_parts, evals_best,
     else:
         indices_better = np.where (evals_parts > evals_best)[0]
     best_parts [indices_better] = np.copy (
-                                positions [indices_better])
+                                    positions [indices_better])
     evals_best [indices_better] = np.copy (
-                                evals_parts [indices_better])
+                                    evals_parts [indices_better])
 
 
 def update_global_best (particles, global_best, evals_parts, eval_global, 

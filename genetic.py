@@ -1,36 +1,35 @@
 import numpy as np
 import random
 
-def invert_fitness (fitness_vals):
+def normalize_fitness (fitness_vals, task='max'):
     '''
+    Normalize fitness values between 1.0 and 2.0.
+
     When the GA problem is to minimize an objective function, invert the
     fitness values. therefore, the particles with lower fitness have a
     higher probebility of being selected for the next generation.
     '''
-    # Normalize values between 1.0 and 2.0
     fitness_norm = (fitness_vals - min (fitness_vals)) / (
                     max (fitness_vals) - min (fitness_vals) + 1.0) + 1.0
-    return 1.0 / fitness_norm
 
-def selection (population, fitness_vals, n_to_select):
+    return (1.0 / fitness_norm) if task == 'min' else fitness_norm
+
+def selection (population, fitness_vals, n_to_select, task='max'):
+    ''' Select the top n_to_select chromosomes according to 
+    their fitness values.
     '''
-    Select the top n_to_select chromosomes according to their 
-    fitness values
-    '''
-    pop_size = population.shape[0]
-    top_indices = np.argsort (fitness_vals) [:n_to_select]
+    fitness_norm = normalize_fitness (fitness_vals, task)
+    top_indices = np.argsort (fitness_norm) [:n_to_select]
     return population [top_indices], top_indices
 
-def roulette_selection (population, n_to_select, fitness_vals):
+def roulette_selection (population, n_to_select, fitness_vals, task='max'):
     indices = []
-    f_norm = (fitness_vals - min (fitness_vals)) / (
-                max (fitness_vals) - min (fitness_vals))
-    f_norm =  f_norm / sum (f_norm)
-    f_cumsum = np.cumsum (f_norm)
+    fitness_norm = normalize_fitness (fitness_vals, task)
+    f_cumsum = np.cumsum (fitness_norm / sum (fitness_norm))
 
     for _ in range (n_to_select):
-        ''' get the index of the first element equal or lower 
-        than a random number from 0 to 1 '''
+        # Get the index of the first element equal or lower 
+        # than a random number from 0 to 1.
         index = np.searchsorted (f_cumsum, random.random())
         indices.append (index)        
     return population [indices]
@@ -70,8 +69,8 @@ def crossover (population, prob_cross, c):
         return None, None
 
     offsprings = np.empty( shape= (len(parents), population.shape[1]) )
-    ''' if an odd number of chromosomes is selected, 
-    don't include the last one in the crossover '''
+    # if an odd number of chromosomes is selected, 
+    # don't include the last one in the crossover.
     if len (parents) % 2 != 0:
         last_parent = parents[-1]
         indices = parents[:-1]
@@ -138,7 +137,7 @@ def normal_mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     # get indices in 2d array with lower values than prob_mut
     indices_change = np.where (random_2d_array < prob_mut)
     # random normal distribution number
-    r = random.gauss(mu=0, sigma=1) * random.random (l_bound, u_bound)
+    r = random.gauss(mu=0, sigma=1) * random.uniform (l_bound, u_bound)
     mut_population [indices_change] = mut_population[indices_change] + r
 
     return mut_population
@@ -171,10 +170,6 @@ def run_ga (pop_size, chrom_size, n_gens, fitness_func, prob_cross,
 
         ga_pop = mutation (ga_pop, prob_mut)
         fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
-        # If we want to minimize the fitness, the chromosomes with higher
-        # fitness values have them inverted to select the best.
-        if task == 'min': 
-            fitness_vals = invert_fitness (fitness_vals)
 
         ga_pop = roulette_selection (ga_pop, pop_size, fitness_vals)
 
