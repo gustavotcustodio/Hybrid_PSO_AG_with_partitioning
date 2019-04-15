@@ -72,7 +72,7 @@ def run_logapso (pso_params, ga_params, eval_func, prob_run_ga = 0.3,
 
     for _ in range (pso_params['max_iters']):
         velocities = pso.update_velocities (particles, best_parts, 
-                            global_best, velocities, pso_params['constants'])
+                            global_best, velocities, pso_params['consts'])
         # Limit velocity to bounds
         #pso.limit_bounds (velocities, pso_params['l_bound'], pso_params['u_bound'])
 
@@ -95,13 +95,13 @@ def run_logapso (pso_params, ga_params, eval_func, prob_run_ga = 0.3,
                                         evals_parts, eval_global, pso_params['task'])
         global_solutions.append (global_best)
         best_evals.append (eval_global)
-        #print (eval_global)
+        print (eval_global)
     return particles, np.array (global_solutions), best_evals
 
 if __name__ == "__main__":
     pso_params = {"pop_size": 100,
                   "particle_size": 30,
-                  "max_iters": 10,
+                  "max_iters": 1000,
                   "consts": [0.7, 1.4, 1.4],
                   "u_bound": 100.0,
                   "l_bound": -100.0,

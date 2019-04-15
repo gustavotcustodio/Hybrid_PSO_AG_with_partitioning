@@ -30,7 +30,7 @@ def run_hybrid_pso_ag_experiment (n_runs, params, eval_function, index_params):
     #    n_vars = params ['pso']['particle_sizes'][i], 
     #    n_particles_part = params ['hybrid']['n_particles_partition'][i], 
     #    n_vars_part = params ['hybrid']['n_vars_partition'][i], 
-    #    consts = params ['pso']['constants'][i], 
+    #    consts = params ['pso']['consts'][i], 
     #    eval_func = eval_function,
     #    max_iters_hybrid = params ['hybrid']['max_iters'][i],
     #    max_iters_pso = params ['pso']['max_iters'][i], 
@@ -69,9 +69,9 @@ def run_logapso_experiment (n_runs, params, eval_function, index_params):
         df_new_res = pd.DataFrame (
                     {'run': [run + 1] * len (best_evals), 
                      'fitness': best_evals, 
-                     'omega': [params['pso']['constants'][i][0]] * len (best_evals), 
-                     'c1': [params['pso']['constants'][i][1]] * len (best_evals), 
-                     'c2': [params['pso']['constants'][i][2]] * len (best_evals) })
+                     'omega': [params['pso']['consts'][i][0]] * len (best_evals), 
+                     'c1': [params['pso']['consts'][i][1]] * len (best_evals), 
+                     'c2': [params['pso']['consts'][i][2]] * len (best_evals) })
 
         df_results  = df_results.append (df_new_res, ignore_index=True)
     return df_results
@@ -84,7 +84,7 @@ def run_pso_experiment (n_runs, params, eval_function, index_params):
     for run in range(n_runs):
         _, _, best_evals = pso.run_pso ( 
                             eval_func = eval_function, 
-                            consts = params['pso']['constants'][i],
+                            consts = params['pso']['consts'][i],
                             max_iters = params['pso']['max_iters'][i], 
                             pop_size = params['pso']['pop_size'][i], 
                             particle_size = params['pso']['particle_size'][i], 
@@ -95,9 +95,9 @@ def run_pso_experiment (n_runs, params, eval_function, index_params):
         df_new_res = pd.DataFrame (
                     {'run': [run + 1] * len (best_evals), 
                      'fitness': best_evals, 
-                     'omega': [params['pso']['constants'][i][0]] * len(best_evals), 
-                     'c1': [params['pso']['constants'][i][1]] * len(best_evals), 
-                     'c2': [params['pso']['constants'][i][2]] * len(best_evals) })
+                     'omega': [params['pso']['consts'][i][0]] * len(best_evals), 
+                     'c1': [params['pso']['consts'][i][1]] * len(best_evals), 
+                     'c2': [params['pso']['consts'][i][2]] * len(best_evals) })
         df_results  = df_results.append (df_new_res, ignore_index=True)
     return df_results
     

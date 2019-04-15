@@ -101,7 +101,7 @@ def run_hpsoga (pso_params, ga_params, eval_func, n_particles_part,
         # Apply the standard PSO to all particles 
         population,_,_= pso.run_pso (
                             eval_func = eval_func,
-                            consts = pso_params['constants'],
+                            consts = pso_params['consts'],
                             max_iters = pso_params['max_iters'],
                             pop_size = pso_params['pop_size'], 
                             particle_size = pso_params['particle_size'], 
@@ -111,13 +111,9 @@ def run_hpsoga (pso_params, ga_params, eval_func, n_particles_part,
                             task = pso_params['task'] )
         # Evaluate all candidate solutions
         fitness_vals = np.apply_along_axis (eval_func, 1, population) 
-        if pso_params['task'] == 'min':
-            roulette_fitness = ga.invert_fitness (fitness_vals)
-        else:
-            roulette_fitness = fitness_vals
         # Apply the selection operator in all solutions
-        selected_pop = ga.roulette_selection (population, 
-                            pso_params['pop_size'], roulette_fitness)
+        selected_pop = ga.roulette_selection (population, pso_params['pop_size'], 
+                            fitness_vals, pso_params['task'])
         # Split population in sub-partitions and apply the crossover in each one.
         new_particles = split_and_crossover (selected_pop, n_particles_part, 
                             n_vars_part, ga_params['prob_cross'], ga_params['c'])
@@ -138,7 +134,7 @@ if __name__ == "__main__":
     pso_params = {"pop_size": 100,
                   "particle_size": 30,
                   "max_iters": 100,
-                  "constants": [0.7, 1.4, 1.4],
+                  "consts": [0.7, 1.4, 1.4],
                   "u_bound": 100.0,
                   "l_bound": -100.0,
                   "task": 'min'}

@@ -180,6 +180,10 @@ def update_best_solutions (positions, best_parts, evals_parts, evals_best,
     task: string
         Min if the better solution is the one with lower evaluation, 
         max if the better solution is the one with higher evaluation.
+
+    Returns
+    -------
+    ******
     '''
     if task == 'min':
         # Indices where the particles have better eval than the current best.
@@ -190,6 +194,7 @@ def update_best_solutions (positions, best_parts, evals_parts, evals_best,
                                     positions [indices_better])
     evals_best [indices_better] = np.copy (
                                     evals_parts [indices_better])
+    return best_parts, evals_best
 
 
 def update_global_best (particles, global_best, evals_parts, eval_global, 
@@ -294,6 +299,7 @@ def run_pso (eval_func, consts, max_iters = 100, pop_size=100, particle_size=10,
         
         global_solutions.append (global_best)
         global_evals.append (eval_global)
+        print (eval_global)
     return particles, np.array (global_solutions), global_evals
 
 if __name__ == '__main__':
@@ -302,5 +308,5 @@ if __name__ == '__main__':
     eval_func = functions.rastrigin
 
     particles, global_solutions, best_evals = run_pso (
-        eval_func, consts, max_iters=100, pop_size=100, particle_size=30
+        eval_func, consts, max_iters=1000, pop_size=60, particle_size=30
     )

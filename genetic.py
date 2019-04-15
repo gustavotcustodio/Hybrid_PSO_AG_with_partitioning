@@ -14,15 +14,15 @@ def normalize_fitness (fitness_vals, task='max'):
 
     return (1.0 / fitness_norm) if task == 'min' else fitness_norm
 
-def selection (population, fitness_vals, n_to_select, task='max'):
+def selection (population, fitness_vals, n_to_select, task):
     ''' Select the top n_to_select chromosomes according to 
     their fitness values.
     '''
     fitness_norm = normalize_fitness (fitness_vals, task)
-    top_indices = np.argsort (fitness_norm) [:n_to_select]
+    top_indices = np.argsort (fitness_norm)[::-1] [0:n_to_select]
     return population [top_indices], top_indices
 
-def roulette_selection (population, n_to_select, fitness_vals, task='max'):
+def roulette_selection (population, n_to_select, fitness_vals, task):
     indices = []
     fitness_norm = normalize_fitness (fitness_vals, task)
     f_cumsum = np.cumsum (fitness_norm / sum (fitness_norm))
@@ -128,22 +128,20 @@ def mutation (population, prob_mut, l_bound = -1, u_bound = 1):
 
 def normal_mutation (population, prob_mut, u_bound = 1, l_bound = -1):
     n_chromosomes = population.shape[0]
-    n_dims = population.shape[1]
     mut_population = np.copy (population)
 
-    # create 2d array with random values
-    random_2d_array = np.random.uniform (0, 1, size=(n_chromosomes, n_dims))
+    # create an array with random values
+    random_array = np.random.uniform (0, 1, size=n_chromosomes)
 
-    # get indices in 2d array with lower values than prob_mut
-    indices_change = np.where (random_2d_array < prob_mut)
+    # get chromosomes with lower values than prob_mut
+    indices_change = np.where (random_array < prob_mut)[0]
     # random normal distribution number
-    r = random.gauss(mu=0, sigma=1) * random.uniform (l_bound, u_bound)
-    mut_population [indices_change] = mut_population[indices_change] + r
-
+    r = random.gauss (mu=0, sigma=1)
+    mut_population[indices_change] = mut_population[indices_change] + r
     return mut_population
 
 def run_single_ga_iter (population, prob_cross, prob_mut, 
-    fitness_func, c = 0.5, l_bound = -1, u_bound = 1):
+    fitness_func, c = 0.5, l_bound = -1, u_bound = 1, task='min'):
     '''
     '''
     ga_pop = np.copy (population)
@@ -155,7 +153,7 @@ def run_single_ga_iter (population, prob_cross, prob_mut,
     ga_pop = mutation (ga_pop, prob_mut)
 
     fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
-    return roulette_selection (ga_pop, n_to_select, fitness_vals)
+    return roulette_selection (ga_pop, n_to_select, fitness_vals, task)
 
 def run_ga (pop_size, chrom_size, n_gens, fitness_func, prob_cross, 
     c, prob_mut, l_bound = -1, u_bound = 1, task = 'min'):
@@ -171,7 +169,7 @@ def run_ga (pop_size, chrom_size, n_gens, fitness_func, prob_cross,
         ga_pop = mutation (ga_pop, prob_mut)
         fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
 
-        ga_pop = roulette_selection (ga_pop, pop_size, fitness_vals)
+        ga_pop = roulette_selection (ga_pop, pop_size, fitness_vals, task)
 
     fitness_vals = np.apply_along_axis (fitness_func, 1, ga_pop)
     best_chrom = np.argmin (fitness_vals)
