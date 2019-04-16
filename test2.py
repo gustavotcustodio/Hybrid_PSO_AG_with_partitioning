@@ -49,7 +49,7 @@ class TestGA (unittest.TestCase):
         n_to_select = 2
         fitness_vals = np.array ([sum(p**2) for p in population])
         pop_selected = genetic.roulette_selection (
-                        population, n_to_select, fitness_vals)
+                        population, n_to_select, fitness_vals, task='min')
 
         self.assertTrue (pop_selected.shape == (2,6))
         self.assertTrue (pop_selected[0] in population)

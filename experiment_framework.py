@@ -82,6 +82,7 @@ def run_pso_experiment (n_runs, params, eval_function, index_params):
     df_results = pd.DataFrame (
                     columns = ['run', 'fitness', 'omega', 'c1', 'c2'])
     for run in range(n_runs):
+        print (f'PSO - iteration {run+1}:')
         _, _, best_evals = pso.run_pso ( 
                             eval_func = eval_function, 
                             consts = params['pso']['consts'][i],
@@ -99,6 +100,8 @@ def run_pso_experiment (n_runs, params, eval_function, index_params):
                      'c1': [params['pso']['consts'][i][1]] * len(best_evals), 
                      'c2': [params['pso']['consts'][i][2]] * len(best_evals) })
         df_results  = df_results.append (df_new_res, ignore_index=True)
+
+        print ()
     return df_results
     
 def run_experiments ():
@@ -121,12 +124,15 @@ def run_experiments ():
             df_results = run_hybrid_pso_ag_experiment (
                             n_runs, params, eval_function, index_params)
         elif alg == 'pso':
+            print ('------------ STARTING PSO ------------')
             df_results = run_pso_experiment (
                             n_runs, params, eval_function, index_params)
         elif alg == 'logapso':
+            print ('------------ STARTING LOGAPSO ------------')
             df_results = run_logapso_experiment (
                             n_runs, params, eval_function, index_params)
         elif alg == 'hgapso':
+            print ('------------ STARTING HGAPSO ------------')
             return None
 
         save_results (alg, index_params, df_results)
