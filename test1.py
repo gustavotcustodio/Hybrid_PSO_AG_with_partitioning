@@ -30,10 +30,6 @@ class TestPSO (unittest.TestCase):
         np.testing.assert_almost_equal (
                         pso.evaluate_particles (eval_func, particle), evals)
 
-    def test_copy_particle (self):
-        particle = np.array ([0.2, 0.1, 0.9])
-        np.testing.assert_array_equal (pso.copy_particle(particle), particle)
-
     def test_get_best_particle (self):
         particles = np.array (
             [[0.2, 0.3, 0.4], [0.2, 0.3, 0.3], [0.5, 0.7, 0.8]] )

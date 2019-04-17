@@ -5,14 +5,13 @@ import genetic as ga
 import functions
 import random
 
-def run_hgapso (pso_params, ga_params, eval_func, particle_size, max_iters = 100):
+def run_hgapso (pso_params, ga_params, eval_func, particle_size, max_iters=100):
     pop_size = 4 * particle_size
-    population = pso.generate_particles (pop_size, particle_size, 
+    population = pso.generate_particles(pop_size, particle_size, 
                         pso_params['l_bound'], pso_params['u_bound'])
     # Evaluate the particles
-    evals_parts = pso.evaluate_particles (eval_func, population)
-    best_fitness =  float('inf') if pso_params['task'
-                                    ] == 'min' else -float('inf')
+    evals_parts = pso.evaluate_particles(eval_func, population)
+    best_fitness = float('inf') if pso_params['task']=='min' else -float('inf')
     for iter in range (max_iters):
         ######################### GA part ##############################
         # Select the 2N best particles (N = particle_size)

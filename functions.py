@@ -10,7 +10,7 @@ def rosenbrock(x):
     # -100 to 100
     x2 = np.array(x[1:])
     x1 = np.array(x[:-1]) 
-    return sum (100 * (x2 - x1 ** 2) ** 2 + (x1 - 1) ** 2)
+    return sum(100 * (x2-x1**2)**2 + (x1-1)**2)
 
 def schwefel_222 (x):
     # -10 to 10
@@ -19,12 +19,12 @@ def schwefel_222 (x):
 
 def quartic_noise (x):
     # -1.28 to 1.28
-    indices = np.array (range (len(x)) )
-    return sum (indices * x**4) + random.random()
+    indices = np.array(range(len(x)))
+    return sum(indices*x**4) + random.random()
 
 def rastrigin(x):
     # -100 to 100
-    return sum(np.square(x) - 10 * np.cos(2 * math.pi * x) + 10)
+    return sum(np.square(x) - 10*np.cos(2*math.pi*x) + 10)
 
 def griewank(x):
     # -600 to 600
@@ -36,34 +36,34 @@ def griewank(x):
 
 def ackley (x):
     #-32 to 32
-    n = len (x)
-    term1 = -20 * math.exp (-0.2 * np.sqrt(sum(x**2)/n))
-    term2 = -math.exp ( sum (np.cos(2*math.pi*x))/n )
+    n = len(x)
+    term1 = -20 * math.exp(-0.2 * np.sqrt(sum(x**2)/n))
+    term2 = -math.exp(sum(np.cos(2*math.pi*x))/n)
     return term1 + term2 + 20 + math.e
 
 def schwefel_226 (x): 
     # -500 to 500
-    absx = np.abs (x)
+    absx = np.abs(x)
     const = 418.982887272433799807913601398
-    return const * len(x) - sum (x * np.sin (np.sqrt(absx)))
+    return const*len(x) - sum(x*np.sin(np.sqrt(absx)))
 
 def u (a, k, m, x_i):
     if   x_i >  a: 
-        return k * ( x_i - a)**m
+        return k * (x_i-a)**m
     elif x_i < -a:
-        return k * (-x_i - a)**m
+        return k * (-x_i-a)**m
     else:
         return 0    
 
 def penalty_1 (x):
     # -50 to 50
     k, m, a = 100, 4, 10
-    n = len (x)
+    n = len(x)
     PI = math.pi
     y = 1.25 + x/4
 
     term1 = 10 * PI / n * math.sin (PI * y[0])**2
-    term2 = sum ((y[:-1] - 1)**2 * (1 + 10* np.sin (PI * y[1:])**2))
+    term2 = sum((y[:-1]-1)**2 * (1 + 10*np.sin(PI*y[1:])**2))
     term3 = (y[-1] - 1)**2
     term4 = sum ([u (a, k, m, x_i) for x_i in x])
     return term1 + term2 + term3 + term4
@@ -73,10 +73,10 @@ def penalty_2 (x):
     k, m, a = 100, 4, 5
     PI = math.pi   
 
-    term1 = 0.1 * math.sin (3*PI*x[0])** 2
-    term2 = sum ( (x - 1)**2 * (1 + np.sin (3*PI*x+1)**2) )
+    term1 = 0.1 * math.sin (3*PI*x[0])**2
+    term2 = sum((x - 1)**2 * (1 + np.sin(3*PI*x+1)**2))
     term3 = (x[-1] - 1) **2 * (1 + math.sin (2*PI*x[-1])) **2
-    term4 = sum ([u (a, k, m, x_i) for x_i in x])
+    term4 = sum([u (a, k, m, x_i) for x_i in x])
     return term1 + term2 + term3 + term4
     
 def get_function (function_name):
