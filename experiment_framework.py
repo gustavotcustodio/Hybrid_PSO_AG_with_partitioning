@@ -12,6 +12,26 @@ def read_json (file_name):
         params = json.load (json_file)
     return params
 
+def create_params_grid (lists_of_params, *other_params):
+    ''' Create a list with all the possible combinations
+    of parameters.
+    '''
+    #if (in.isEmpty()) {
+	#		out.add(part);
+	#		return;
+	#	}
+	#	if (out.contains(part)) 
+	#		return;
+	##	for (String s : nextIn.remove(0)) {
+	#		Set<string> nextPart = new LinkedHashSet<string>(part);
+	#		nextPart.add(s);
+	#		permUtil(nextIn, nextPart, out);
+	#	}
+
+    for param in dict_params.values():
+        create_params_grid (dict_params.values(), )
+        
+
 def save_results (algorithm, index_params, df_results):
     results_dir = os.path.join (os.path.dirname(__file__), 'exp_results')
     file_name = f"{algorithm}_params_{index_params}.csv"
@@ -118,8 +138,8 @@ def run_experiments ():
     n_runs = 10
 
     for alg, index_params in experiments:
-        eval_function = functions.get_function (
-                            params['pso']['eval_func'][index_params])
+        eval_function, l_bound, u_bound, task = functions.get_function (
+                                                    params['pso']['eval_func'])
         if alg == 'hpsoga':
             df_results = run_hybrid_pso_ag_experiment (
                             n_runs, params, eval_function, index_params)

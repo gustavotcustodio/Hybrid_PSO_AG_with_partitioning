@@ -233,8 +233,8 @@ def update_global_best (particles, global_best, evals_parts, eval_global,
     return global_best, eval_global
 
 
-def run_pso (eval_func, consts, max_iters = 100, pop_size=100, particle_size=10,
-    initial_particles = None, l_bound=-100.0, u_bound=100.0, task='min'):
+def run_pso (eval_func, consts, max_iters=100, pop_size=100, particle_size=10,
+    initial_particles=None, l_bound=-100.0, u_bound=100.0, task='min'):
     '''
     Run the PSO algorithm for max_iters iterations.
 

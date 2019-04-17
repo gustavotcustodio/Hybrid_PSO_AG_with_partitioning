@@ -78,28 +78,48 @@ def penalty_2 (x):
     term3 = (x[-1] - 1) **2 * (1 + math.sin (2*PI*x[-1])) **2
     term4 = sum ([u (a, k, m, x_i) for x_i in x])
     return term1 + term2 + term3 + term4
-
+    
 def get_function (function_name):
     if function_name =='square_sum':
-        return square_sum
+        l_bound, u_bound = -100.0, 100.0
+        task = 'min'
+        return square_sum, l_bound, u_bound, task
     elif function_name == 'rosenbrock':
-        return rosenbrock
+        l_bound, u_bound = -100.0, 100.0
+        task = 'min'
+        return rosenbrock, l_bound, u_bound, task
     elif function_name == 'schwefel_222':
-        return schwefel_222
+        l_bound, u_bound = -10.0, 10.0
+        task = 'min'
+        return schwefel_222, l_bound, u_bound, task
     elif function_name == 'quartic_noise':
-        return quartic_noise
+        l_bound, u_bound = -1.28, 1.28
+        task = 'min'
+        return quartic_noise, l_bound, u_bound, task
     elif function_name == 'rastrigin':
-        return rastrigin
+        l_bound, u_bound = -100.0, 100.0
+        task = 'min'
+        return rastrigin, l_bound, u_bound, task
     elif function_name == 'griewank':
-        return griewank
+        l_bound, u_bound = -600.0, 600.0
+        task = 'min'
+        return griewank, l_bound, u_bound, task
     elif function_name == 'ackley':
-        return ackley
+        l_bound, u_bound = -32.0, 32.0
+        task = 'min'
+        return ackley, l_bound, u_bound, task
     elif function_name == 'schwefel_226':
-        return schwefel_226
+        l_bound, u_bound = -500.0, 500.0
+        task = 'min'
+        return schwefel_226, l_bound, u_bound, task
     elif function_name == 'penalty_1':
-        return penalty_1
+        l_bound, u_bound = -50.0, 50.0
+        task = 'min'
+        return penalty_1, l_bound, u_bound, task
     elif function_name == 'penalty_2':
-        return penalty_2
+        l_bound, u_bound = -50.0, 50.0
+        task = 'min'
+        return penalty_2, l_bound, u_bound, task
     else:
         return None
     

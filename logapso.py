@@ -34,7 +34,7 @@ def ga_random_walk (eval_func, best_parts, evals_best, task, ind_apply_ga,
                                         prob_mut = ga_params['prob_mut'], 
                                         l_bound = pso_params['l_bound'], 
                                         u_bound = pso_params['u_bound'],
-                                        task = pso_params['task'] )
+                                        task = function_params['task'] )
 
             test_new_best = best_parts [i] + step_size * step_direction
             eval_new = eval_func (test_new_best)
@@ -45,9 +45,12 @@ def ga_random_walk (eval_func, best_parts, evals_best, task, ind_apply_ga,
             if op (evals_best [i], eval_new) == eval_new:
                 best_parts [i] = test_new_best
 
-def run_logapso (pso_params, ga_params, eval_func, prob_run_ga = 0.3, 
+def run_logapso (pso_params, ga_params, function_params, prob_run_ga = 0.3, 
     step_size=0.2, initial_particles = None):
-    
+    '''
+    '''
+    eval_func = function_params['eval_function']
+
     if initial_particles is None:
         particles = pso.generate_particles (
                             pso_params['pop_size'], 
@@ -64,10 +67,10 @@ def run_logapso (pso_params, ga_params, eval_func, prob_run_ga = 0.3,
     
     best_parts, evals_best = np.copy (particles), np.copy (evals_parts)
     global_best, eval_global = pso.get_best_particle (
-                                    particles, evals_parts, pso_params['task'])
+                                    particles, evals_parts, function_params['task'])
 
     velocities = pso.generate_velocities (pop_size, particle_size, 
-                        pso_params['l_bound'], pso_params['u_bound'])
+                        function_params['l_bound'], function_params['u_bound'])
     global_solutions, best_evals = [], []
 
     for _ in range (pso_params['max_iters']):
@@ -84,15 +87,15 @@ def run_logapso (pso_params, ga_params, eval_func, prob_run_ga = 0.3,
 
         best_copy = np.copy (best_parts)
         pso.update_best_solutions ( particles, best_parts, 
-                                    evals_parts, evals_best, pso_params['task'])
+                                evals_parts, evals_best, function_params['task'])
         # Indices of best solutions to apply the GA
         ind_apply_ga = np.unique (np.where(best_copy != best_parts)[0])
 
-        ga_random_walk (eval_func, best_parts, evals_best, pso_params['task'], 
+        ga_random_walk (eval_func, best_parts, evals_best, function_params['task'], 
                         ind_apply_ga, prob_run_ga, step_size, pso_params, ga_params)
 
         global_best, eval_global = pso.update_global_best (particles, global_best, 
-                                        evals_parts, eval_global, pso_params['task'])
+                                        evals_parts, eval_global, function_params['task'])
         global_solutions.append (global_best)
         best_evals.append (eval_global)
         print (eval_global)
