@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import experiment_framework_2 as ef
+import experiment_framework as ef
 
 class TestExperimentsFramework(unittest.TestCase):
     def test_create_grid_params(self):

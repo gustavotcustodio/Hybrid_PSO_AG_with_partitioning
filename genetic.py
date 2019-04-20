@@ -1,23 +1,23 @@
-import numpy as np
 import random
+import numpy as np
+
 
 def normalize_fitness (fitness_vals, task='max'):
-    '''
-    Normalize fitness values between 1.0 and 2.0.
+    """Normalize fitness values between 1.0 and 2.0.
 
     When the GA problem is to minimize an objective function, invert the
     fitness values. therefore, the particles with lower fitness have a
     higher probebility of being selected for the next generation.
-    '''
-    fitness_norm = (fitness_vals - min (fitness_vals)) / (
-                    max (fitness_vals) - min (fitness_vals) + 1.0) + 1.0
+    """
+    fitness_norm = ((fitness_vals-min(fitness_vals)) / 
+                        (max(fitness_vals)-min(fitness_vals)+1.0) + 1.0)
 
     return (1.0 / fitness_norm) if task == 'min' else fitness_norm
 
 def selection (population, fitness_vals, n_to_select, task):
-    ''' Select the top n_to_select chromosomes according to 
+    """Select the top n_to_select chromosomes according to 
     their fitness values.
-    '''
+    """
     fitness_norm = normalize_fitness (fitness_vals, task)
     top_indices = np.argsort (fitness_norm)[::-1] [0:n_to_select]
     return population [top_indices], top_indices
