@@ -263,28 +263,28 @@ def run_pso(eval_func, consts, max_iters=100, pop_size=100, particle_size=10,
 
     evals_parts = evaluate_particles(eval_func, particles)
 
-    best_parts = np.copy (particles)
-    evals_best = np.copy (evals_parts)
+    best_parts = np.copy(particles)
+    evals_best = np.copy(evals_parts)
     global_best, eval_global = get_best_particle(particles, evals_parts, task)
 
     velocities = generate_velocities(pop_size, particle_size, l_bound, u_bound)
 
     global_solutions, global_evals = [], []
     for _ in range (max_iters):
-        velocities = update_velocities (
-                    particles, best_parts, global_best, velocities, consts)
+        velocities = update_velocities(particles, best_parts, global_best, 
+                                       velocities, consts)
 
-        particles = update_positions (particles, velocities)    
-        evals_parts = evaluate_particles (eval_func, particles)
+        particles = update_positions(particles, velocities)    
+        evals_parts = evaluate_particles(eval_func, particles)
 
         update_best_solutions(
                     particles, best_parts, evals_parts, evals_best, task)
         global_best, eval_global = update_global_best(
                     particles, global_best, evals_parts, eval_global, task)
         
-        global_solutions.append (global_best)
-        global_evals.append (eval_global)
-    return particles, np.array (global_solutions), global_evals
+        global_solutions.append(global_best)
+        global_evals.append(eval_global)
+    return particles, np.array(global_solutions), global_evals
 
 if __name__ == '__main__':
 
