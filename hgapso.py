@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pso
 import genetic as ga
-import functions
 import random
+import functions
 
 def run_hgapso (pso_params, ga_params, eval_func, particle_size, max_iters=100):
     pop_size = 4 * particle_size

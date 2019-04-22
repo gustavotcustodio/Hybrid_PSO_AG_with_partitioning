@@ -1,7 +1,7 @@
 import numpy as np
-import functions
 import genetic as ga
 import pso
+import functions
 
 def split_particles (particles, n_particles_part, n_vars_part):
     '''
