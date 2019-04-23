@@ -1,9 +1,9 @@
 {
     "pso": 
     {
-        "pop_size": [20, 50, 100],
+        "pop_size": [50, 100, 200],
         "particle_size": [30, 100, 500],
-        "max_iters": [100, 500, 1000],
+        "max_iters": [200, 500],
         "consts": [[0.55, 1.49618, 1.49618], [1.0, 1.49618, 1.49618],
                     [0.7298, 1.49618, 1.49618], [0.7298, 1.0, 1.49618],
                     [0.7298, 2.0, 1.49618], [0.7298, 2.0, 1.0],
@@ -13,9 +13,10 @@
     "ga":
     {
         "prob_cross": [0.8],
-        "prob_mut": [0.05, 0.1, 0.2],
+        "prob_mut": [0.02, 0.05, 0.2],
         "c": [0.5],
-        "n_gens": [10]
+        "n_gens": [10],
+        "pop_size_ga": [15]
     },
     "hpsoga":
     {
@@ -33,5 +34,28 @@
         "square_sum", "rosenbrock", "schwefel_222", "quartic_noise", 
         "rastrigin", "griewank", "ackley", "schwefel_226", 
         "penalty_1", "penalty_2"
-    ]
+    ],
+    "clustering":
+    {
+        "diabetes":
+        {
+            "n_clusters":[2, 6, 10]
+        },
+        "ionosphere":
+        {
+            "n_clusters":[2, 6, 10]
+        },
+        "iris":
+        {
+            "n_clusters":[3, 9, 15]
+        },
+        "wine":
+        {
+            "n_clusters":[3, 9, 15]
+        },
+        "wdbc":
+        {
+            "n_clusters":[2, 6, 10]
+        }
+    }
 }

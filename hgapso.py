@@ -91,7 +91,6 @@ def run_hgapso(alg_params, func_params):
             best_index = np.argmax(evals_parts) 
             if evals_parts[best_index] > best_fitness:
                 best_fitness = evals_parts[best_index]
-        print(best_fitness)
         best_pop.append(population[best_index])
         best_fitness_values.append(best_fitness)
     return population, best_pop, best_fitness_values

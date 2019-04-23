@@ -97,11 +97,12 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
     """"Run experiments with the HGAPSO algorithm 'n_run' times for
     each set of parameters."""
     all_params = {}
-    all_params.update(list_pso_params)
-    del list_ga_params['prob_cross']
-    del list_ga_params['c']
-    del list_ga_params['n_gens']
-    all_params.update(list_ga_params)
+    all_params.update(list_pso_params.copy())
+    all_params.update(list_ga_params.copy())
+    del all_params['prob_cross']
+    del all_params['c']
+    del all_params['n_gens']
+    del all_params['pop_size_ga']
 
     pso_ga_params = create_grid_params(all_params)
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
