@@ -84,10 +84,10 @@ def rosenbrock(x):
     return sum(100 * (x2-x1**2)**2 + (x1-1)**2)
 
 
-def schwefel_222 (x):
+def schwefel_222(x):
     # -10 to 10
-    absx = np.abs (x)
-    return sum (absx) + np.prod (absx)
+    absx = np.abs(x)
+    return sum(absx) + np.prod(absx)
 
 
 def quartic_noise (x):

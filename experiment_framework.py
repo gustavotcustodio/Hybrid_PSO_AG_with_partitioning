@@ -121,14 +121,18 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
             print(f'-------- HGAPSO - run {run+1} --------')
             _, _, best_evals = hgapso.run_hgapso(alg_params=p,
                                                  func_params=func_params)
-            df_new_res = pd.DataFrame(
-                    {'run':[run+1]*len(best_evals),
+            n_iters = len(best_evals)
+            new_res_dict = {'run':[run+1]*n_iters,
                     'fitness':best_evals,
-                    'omega':[p['consts'][0]]*len(best_evals),
-                    'c1':[p['consts'][1]]*len(best_evals),
-                    'c2':[p['consts'][2]]*len(best_evals),
-                    'prob_mut':[p['prob_mut']]*len(best_evals)}
-                    )
+                    'pop_size':[p['pop_size']]*n_iters,
+                    'particle_size':[p['particle_size']]*n_iters,
+                    'omega':[p['consts'][0]]*n_iters,
+                    'c1':[p['consts'][1]]*n_iters,
+                    'c2':[p['consts'][2]]*n_iters,
+                    'prob_mut':[p['prob_mut']]*n_iters,
+                    "max_iters":[p['max_iters']]*n_iters}
+            df_new_res = pd.DataFrame(new_res_dict)
+
             df_results = df_results.append(df_new_res, ignore_index=True)
         index_params += 1
     return df_results
