@@ -18,26 +18,18 @@ def xie_beni(inputs, labels):
         d = int(particle.shape[0]/m) # number of clusters
         clusters = np.reshape(particle, (d, m)) #fit each cluster in a row
         distances = get_distances(inputs, clusters, labels)
-
+        distances[np.where(distances==0)] = 10**(-100) # avoids division by 0
         # Shape of distance matrix: (n x d)
         u = np.array([[distances[k,i]**2 / sum(distances[k,:]**2)
                 for i in range(d)] for k in range(n)])
-        print(u)
         u = 1.0 / u
-
-        num = 0.0
-        den = np.empty(d*d)
-        for k in range(n):
-            for i in range(d):
-                num += u[k,i]**2 * sum(clusters[i]-inputs[k])
-        for i in range(d):
-            for j in range(d):
-                if i!=j:
-                    den[i*d+j] = sum(clusters[i]-clusters[j])
-        den = min(den)*n
+        u = (u.T / np.sum(u, axis=1)).T
+        num = sum([u[k,i]**2 * sum((clusters[i]-inputs[k])**2)
+                for k in range(n) for i in range(d)])        
+        den = n * min([sum((clusters[i]-clusters[j])**2)
+                for j in range(d) for i in range(d) if i!=j])
         return num/den
     return wrapper
-
 
 def davies_bouldin(inputs, labels):
     n = inputs.shape[0] # number of inputs

@@ -26,7 +26,8 @@ class TestPSO (unittest.TestCase):
         centers = kmeans.cluster_centers_
         centers = centers.reshape(centers.shape[0]*centers.shape[1])
         XB = functions.xie_beni(data, labels)(centers)
-        self.assertAlmostEqual
+        self.assertAlmostEqual(XB, 0.1225862411)
+
 
 if __name__ == '__main__':
     unittest.main()

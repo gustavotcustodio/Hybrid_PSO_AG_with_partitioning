@@ -137,6 +137,21 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
                             list_logapso_params, func_name, n_runs):
     """Execute experiments with the LOGAPSO 'n_runs' times for each
     combination of PSO and GA parameters for a given benchmark function.
+
+    Parameters
+    ----------
+    list_pso_params: dict
+        Dictionary containing the PSO parameters.
+    list_ga_params: dict
+        Dictionary containing the GA parameters.
+    list_logapso: dict
+        Dictionary containing the LOGAPSO parameters.
+    func_name: string
+    n_runs: int
+
+    Returns
+    -------
+
     """
     all_params = {}
     all_params.update(list_pso_params)
