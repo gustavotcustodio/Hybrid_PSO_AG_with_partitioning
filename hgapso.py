@@ -48,7 +48,7 @@ def run_hgapso(alg_params, func_params):
         top_pop = ga.random_arith_crossover(top_pop)
 
         # Mutation
-        top_pop = ga.normal_mutation(population=top_pop,
+        top_pop = ga.gauss_mutation(population=top_pop,
                                      prob_mut=alg_params['prob_mut'],
                                      l_bound=func_params['l_bound'],
                                      u_bound=func_params['u_bound'])

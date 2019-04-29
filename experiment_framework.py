@@ -9,7 +9,11 @@ import functions
 import os
 
 def read_json(file_name):
-    """Read a Json file with the parameters for optimization algorithms."""
+    """
+    Read a Json file with the parameters for optimization algorithms.
+    
+    
+    """
     with open(file_name) as json_file:
         params = json.load (json_file)
     return params
@@ -22,8 +26,8 @@ def save_results(algorithm, benchmark_func, df_results):
     ----------
     algorithm: string
         Name of optimization algorithm.
-    index_params: int
-        Index of parameters used for the optimization algorithm.
+    benchmark_func: string
+        Name of benchmark function.
     df_results: Dataframe
         Dataframe containing the results of experiments.
     """
@@ -45,6 +49,11 @@ def create_grid_params(dict_params):
                 {'max_iters':100, 'pop_size':50},
                 {'max_iters':200, 'pop_size':30},
                 {'max_iters':200, 'pop_size':50}]
+
+    Returns
+    -------
+    final_params: list[dict]
+        List containing a dict for each permutation of parameters.
     """
     cartesian_params = [[]]
     # Generate the cartesian product of all possible parameters
@@ -94,7 +103,8 @@ def run_pso_experiments(list_params, func_name, n_runs):
 
 def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
                            n_runs):
-    """"Run experiments with the HGAPSO algorithm 'n_run' times for
+    """
+    Run experiments with the HGAPSO algorithm 'n_run' times for
     each set of parameters."""
     all_params = {}
     all_params.update(list_pso_params)
@@ -135,7 +145,8 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
 
 def run_logapso_experiments(list_pso_params, list_ga_params,
                             list_logapso_params, func_name, n_runs):
-    """Execute experiments with the LOGAPSO 'n_runs' times for each
+    """
+    Execute experiments with the LOGAPSO 'n_runs' times for each
     combination of PSO and GA parameters for a given benchmark function.
 
     Parameters
@@ -151,7 +162,8 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
 
     Returns
     -------
-
+    df_results: Dataframe
+        Dataframe containing the results of experiments.
     """
     all_params = {}
     all_params.update(list_pso_params)

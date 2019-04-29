@@ -44,7 +44,7 @@ def ga_random_walk(alg_params, func_params, best_parts, evals_best,
                 best_parts[i] = test_new_best
 
 def run_logapso(alg_params, func_params, prob_run_ga=0.3, step_size=0.2,
-                initial_particles = None):
+                initial_particles=None):
     """."""
     eval_func = func_params['eval_func']
 
