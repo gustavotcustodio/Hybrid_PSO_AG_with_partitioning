@@ -1,7 +1,6 @@
 import unittest
 import numpy as np
 import random
-
 import pso
 
 class TestPSO (unittest.TestCase):
@@ -97,12 +96,12 @@ class TestPSO (unittest.TestCase):
         
 
     def test_update_global_best (self):
-        particles = np.array (
-            [[1.0, 0.5, 0.4, 0.1], [0.9, 0.3, 0.5, 0.0], [0.2, 0.2, 0.1, 0.2]])
-        global_best = np.array ([0.4, 0.2, 0.3, 0.1])
+        particles = np.array([[1.0, 0.5, 0.4, 0.1], [0.9, 0.3, 0.5, 0.0],
+                              [0.2, 0.2, 0.1, 0.2]])
+        global_best = np.array([0.4, 0.2, 0.3, 0.1])
 
-        evals_parts = np.sum (particles **2, axis=1)
-        eval_global = np.sum (global_best **2)
+        evals_parts = np.sum(particles **2, axis=1)
+        eval_global = np.sum(global_best **2)
 
         ################ Test for maximization ################
         correct_global_best = np.array ([1.0, 0.5, 0.4, 0.1])
@@ -122,7 +121,6 @@ class TestPSO (unittest.TestCase):
                             particles, global_best, evals_parts, eval_global)
         np.testing.assert_array_equal (global_best, correct_global_best)
         np.testing.assert_array_equal (eval_global, correct_eval_global)
-        
 
     def test_run_pso(self):
         particles = np.array (
@@ -141,7 +139,6 @@ class TestPSO (unittest.TestCase):
         np.testing.assert_allclose (global_solutions, np.zeros((10,3)), atol=1.0 )
 
         self.assertListEqual (best_evals, sorted(best_evals, reverse=True))
-
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ import numpy as np
 import random
 import hybrid_pso_ga as hpsoga
 
-class TestGA (unittest.TestCase):
+class TestHybridPSO (unittest.TestCase):
     def test_split_particles (self):
         particles_1 = np.array ([[0,0,1,0],[0,1,0,0],[1,1,1,1],[1,1,0,1]])
         particles_2 = np.array ([[1,5,2,3,4,6],[1,4,6,7,8,3],

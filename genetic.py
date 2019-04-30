@@ -3,36 +3,60 @@ import numpy as np
 
 
 def normalize_fitness (fitness_vals, task='max'):
-    """Normalize fitness values between 1.0 and 2.0.
+    """
+    Normalize fitness values between 1.0 and 2.0.
 
     When the GA problem is to minimize an objective function, invert the
     fitness values. therefore, the particles with lower fitness have a
     higher probebility of being selected for the next generation.
     """
-    fitness_norm = ((fitness_vals-min(fitness_vals)) / 
-                        (max(fitness_vals)-min(fitness_vals)+1.0) + 1.0)
+    fitness_norm = ((fitness_vals-min(fitness_vals))/
+                    (max(fitness_vals)-min(fitness_vals)+1.0) + 1.0)
 
-    return (1.0 / fitness_norm) if task == 'min' else fitness_norm
+    return (1.0/fitness_norm) if task=='min' else fitness_norm
+
 
 def selection (population, fitness_vals, n_to_select, task):
-    """Select the top n_to_select chromosomes according to 
+    """
+    Select the top n_to_select chromosomes according to 
     their fitness values.
     """
     fitness_norm = normalize_fitness (fitness_vals, task)
     top_indices = np.argsort (fitness_norm)[::-1] [0:n_to_select]
     return population [top_indices], top_indices
 
-def roulette_selection (population, n_to_select, fitness_vals, task):
-    indices = []
-    fitness_norm = normalize_fitness (fitness_vals, task)
-    f_cumsum = np.cumsum (fitness_norm / sum (fitness_norm))
 
-    for _ in range (n_to_select):
+def roulette_selection (population, n_to_select, fitness_vals, task):
+    """
+    Roulette selection of genetic algorithm.
+
+    Parameters
+    ----------
+    population: 2d array
+        Candidate solutions.
+    n_to_select: int
+        Number of candidate solutions to keep for the next generation.
+    fitness_vals: 1d array
+        Fitness values of candidate solutions.
+    task: 'min' or 'max'
+        Minimization or maximization problem.
+
+    Returns
+    -------
+    selected_pop: 2d array
+        'n_to_select' best selected chromosomes.
+    """
+    indices = []
+    fitness_norm = normalize_fitness(fitness_vals, task)
+    f_cumsum = np.cumsum(fitness_norm / sum (fitness_norm))
+
+    for _ in range(n_to_select):
         # Get the index of the first element equal or lower 
         # than a random number from 0 to 1.
-        index = np.searchsorted (f_cumsum, random.random())
-        indices.append (index)        
-    return population [indices]
+        index = np.searchsorted(f_cumsum, random.random())
+        indices.append(index)        
+    return population[indices]
+
 
 def random_arith_crossover(population):
     """."""
@@ -41,6 +65,7 @@ def random_arith_crossover(population):
     # Last chromosome
     last_chrom = rd[-1]*population[-1] + (1-rd[-1])*population[0]
     return np.append(cross_pop, [last_chrom], axis = 0)
+
 
 def arith_crossover(population, prob_cross, c):
     """
@@ -169,35 +194,37 @@ def mutation(population, prob_mut, possible_values):
     ----------
     population: 2d array
     prob_mut: float
-    possible_values: 1d array
+    possible_values: list
 
     Returns
     -------
-    mut_pop: 2d array
+    final_pop: 2d array
     """
     n_chroms = population.shape[0]
     chrom_size = population.shape[1]
-    mut_population = np.copy(population)
+    # mut_pop is a copy of the population with all values changed.
+    mut_pop = np.copy(population)
+    final_pop = np.copy(population)
 
     # create 2d array with random values
     random_2d_array = np.random.uniform(0, 1, size=(n_chroms, chrom_size))
-    
+    # get indices in 2d array with lower values than prob_mut
+    indices_mut = np.where(random_2d_array < prob_mut)
     for v in possible_values:
-        # get indices in 2d array with lower values than prob_mut
-        indices_change = np.where(random_2d_array < prob_mut 
-                                  and random_2d_array==v)
-        # Copy list removing the value that we wish to change
+        indices_change = np.where(population==v)
         pv = possible_values.copy()
+        # remove the values v from list
         del pv[v]
-        n_mut = len(indices_change)
-        mut_population[indices_change] = np.random.choice(pv, size=n_mut)
-    return mut_population
+        mut_pop[indices_change] = np.random.choice(
+                                    pv, size=len(indices_change[0]))
+    final_pop[indices_mut] = mut_pop[indices_mut]
+    return final_pop
     
 
 def run_single_ga_iter (population, prob_cross, prob_mut, fitness_func, 
                         c=0.5, l_bound=-1, u_bound=1, task='min'):
     """."""
-    ga_pop = np.copy (population)
+    ga_pop = np.copy(population)
     n_to_select = ga_pop.shape[0]
 
     offsprings, _ = arith_crossover(ga_pop, prob_cross, c)
