@@ -47,7 +47,6 @@ def run_logapso(alg_params, func_params, prob_run_ga=0.1, step_size=0.2,
                 initial_particles=None):
     """."""
     eval_func = func_params['eval_func']
-    print(alg_params)
     if initial_particles is None:
         particles = pso.generate_particles (
                 alg_params['pop_size'], alg_params['particle_size'],
@@ -91,7 +90,6 @@ def run_logapso(alg_params, func_params, prob_run_ga=0.1, step_size=0.2,
                 )
         global_solutions.append(global_best)
         best_evals.append(eval_global)
-        print(eval_global)
     return particles, np.array(global_solutions), best_evals
 
 
