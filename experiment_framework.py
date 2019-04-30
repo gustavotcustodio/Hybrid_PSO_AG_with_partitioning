@@ -181,7 +181,7 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
         for run in range(n_runs):
             print(f'-------- LOGAPSO - run {run+1} --------')
             _, _, best_evals = logapso.run_logapso(
-                    alg_params=pso_ga_params, func_params=func_params,
+                    alg_params=p, func_params=func_params,
                     prob_run_ga=p['prob_run_ga'],
                     step_size=p['step_size']
                     )
@@ -201,7 +201,7 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
 def run_experiments(n_runs, params):
     """Run a group of experiments for each optimisation algorithm."""
     # Number of times each group of experiments is run
-    algorithms = ['hgapso']
+    algorithms = ['logapso']
     benchmark_funcs = params['function']
     
     for alg in algorithms:
@@ -211,6 +211,11 @@ def run_experiments(n_runs, params):
             elif alg == 'hgapso':
                 df_results = run_hgapso_experiments(
                         params['pso'], params['ga'], func, n_runs)
+            elif alg == 'logapso':
+                df_results = run_logapso_experiments(
+                        params['pso'], params['ga'], params['logapso'], 
+                        func, n_runs)
+
             save_results(alg, func, df_results)
 
 

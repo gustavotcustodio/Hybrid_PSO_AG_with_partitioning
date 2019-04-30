@@ -14,7 +14,6 @@ class TestExperimentsFramework(unittest.TestCase):
                         ]
         self.assertEqual(ef.create_grid_params(dict_params), self.expected)
 
-
     def test_run_pso_experiments(self):
         # 12 possible combinations of parameters.
         self.pso_params = {
@@ -25,9 +24,8 @@ class TestExperimentsFramework(unittest.TestCase):
         }
         self.pso_results = ef.run_pso_experiments(
                                 self.pso_params, 'rosenbrock', n_runs=5)
-        self.assertEqual(
-                list(self.pso_results.columns), 
-                ['run','fitness','omega','c1','c2'])
+        self.assertEqual(list(self.pso_results.columns), 
+                        ['run','fitness','omega','c1','c2'])
         # 12 combinations of params, 50 iterations, 5 runs.
         # 12 x 50 x 5 = 3000
         self.assertEqual(self.pso_results.shape, (3000,5))

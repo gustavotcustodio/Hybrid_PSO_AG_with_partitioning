@@ -9,6 +9,7 @@ def logapso_ga_func(eval_func, particle):
         return eval_func(particle + chromosome) 
     return wrapper
 
+
 def ga_random_walk(alg_params, func_params, best_parts, evals_best,
                    ind_apply_ga,prob_run_ga, step_size):
     """Executes the genetic algorithm to move the best position found by 
@@ -25,16 +26,14 @@ def ga_random_walk(alg_params, func_params, best_parts, evals_best,
             ga_func = logapso_ga_func(eval_func, best_parts[i])
 
             # Apply the GA to get the step direction where the best solution moves.
-            step_direction = ga.run_ga(pop_size=alg_params['pop_size'],
+            step_direction = ga.run_ga(pop_size=alg_params['pop_ga'],
                                        chrom_size=alg_params['particle_size'],
                                        n_gens=alg_params['n_gens'],
                                        fitness_func=ga_func,
-                                       prob_cross=alg_params['prob_cross'],
-                                       c=alg_params['c'],
                                        prob_mut=alg_params['prob_mut'],
-                                       l_bound=func_params['l_bound'],
-                                       u_bound=func_params['u_bound'],
+                                       possible_values=[-1, 0, 1],
                                        task=func_params['task'])
+                                       
             test_new_best = best_parts[i] + step_size*step_direction
             eval_new = eval_func(test_new_best)
             # Check if the fitness of the new solution is better than 
@@ -43,11 +42,12 @@ def ga_random_walk(alg_params, func_params, best_parts, evals_best,
             if op(evals_best[i], eval_new) == eval_new:
                 best_parts[i] = test_new_best
 
-def run_logapso(alg_params, func_params, prob_run_ga=0.3, step_size=0.2,
+
+def run_logapso(alg_params, func_params, prob_run_ga=0.1, step_size=0.2,
                 initial_particles=None):
     """."""
     eval_func = func_params['eval_func']
-
+    print(alg_params)
     if initial_particles is None:
         particles = pso.generate_particles (
                 alg_params['pop_size'], alg_params['particle_size'],
@@ -70,10 +70,8 @@ def run_logapso(alg_params, func_params, prob_run_ga=0.3, step_size=0.2,
     global_solutions, best_evals = [], []
 
     for _ in range(alg_params['max_iters']):
-        velocities = pso.update_velocities(
-                particles, best_parts, global_best, velocities,
-                alg_params['consts'])
-
+        velocities = pso.update_velocities(particles, best_parts, global_best,
+                                           velocities, alg_params['consts'])
         particles = pso.update_positions(particles, velocities)
 
         evals_parts = pso.evaluate_particles(eval_func, particles)
@@ -95,6 +93,7 @@ def run_logapso(alg_params, func_params, prob_run_ga=0.3, step_size=0.2,
         best_evals.append(eval_global)
         print(eval_global)
     return particles, np.array(global_solutions), best_evals
+
 
 if __name__ == "__main__":
     alg_params = {"pop_size":100, "particle_size":30, "max_iters":1000,

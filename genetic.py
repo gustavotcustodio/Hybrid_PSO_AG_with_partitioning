@@ -115,7 +115,19 @@ def arith_crossover(population, prob_cross, c):
 
 
 def single_point_crossover(population):
-    """."""
+    """
+    Perform single-point crossover operation between multiple particles.
+
+    Parameters
+    ----------
+    population: 2d array
+        Population of candidate solutions.
+
+    Returns
+    -------
+    offsprings: 2d array
+        Population generated from crossover operation.
+    """
     n_chroms = population.shape[0]
     chrom_size = population.shape[1]
     if chrom_size <= 1:
@@ -124,11 +136,11 @@ def single_point_crossover(population):
     offsprings = np.empty(shape=(n_chroms, chrom_size))
     for c in range(0, n_chroms, 2):
         if c < n_chroms-1:
-            pos_cross = random.randint(1, n_chroms-1)
-            offsprings[c] = (population[c, :pos_cross] 
-                            + population[c+1, pos_cross:])
-            offsprings[c+1] = (population[c, :pos_cross] 
-                            + population[c+1, pos_cross:])
+            pos_cross = random.randint(1, chrom_size-1)
+            offsprings[c] = np.append(population[c, :pos_cross],
+                                      population[c+1, pos_cross:])
+            offsprings[c+1] = np.append(population[c+1, :pos_cross],
+                                        population[c, pos_cross:])
         else:
             offsprings[c] = np.copy(population[c])
     return offsprings
@@ -236,15 +248,15 @@ def run_single_ga_iter (population, prob_cross, prob_mut, fitness_func,
     return roulette_selection(ga_pop, n_to_select, fitness_vals, task)
 
 
-def run_ga(pop_size, chrom_size, n_gens, fitness_func, c, prob_mut,
+def run_ga(pop_size, chrom_size, n_gens, fitness_func, prob_mut,
            possible_values, task='min'):
     """."""
     indices_pop = np.random.randint(0, len(possible_values), 
                                     size=(pop_size, chrom_size))
-    ga_pop = np.array([possible_values[i] for i in indices_pop])
-
+    ga_pop = np.array([[possible_values[i] for i in row] 
+                       for row in indices_pop])
     for _ in range(n_gens):
-        offsprings, _ = single_point_crossover(ga_pop)
+        offsprings = single_point_crossover(ga_pop)
         if offsprings is not None:
             ga_pop = np.append(ga_pop, offsprings, axis=0)
 
