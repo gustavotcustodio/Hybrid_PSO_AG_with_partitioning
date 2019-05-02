@@ -220,5 +220,5 @@ def run_experiments(n_runs, params):
 
 
 if __name__ == '__main__':
-    params = read_json ('parameters.json')
+    params = read_json('parameters.json')
     run_experiments(5, params)

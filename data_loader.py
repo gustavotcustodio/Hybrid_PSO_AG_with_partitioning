@@ -5,8 +5,18 @@ import os
 
 
 def norm_plus_minus_1(dataset):
-    """Normalize the columns of a dataset between -1 and 1,
+    """
+    Normalize the columns of a dataset between -1 and 1,
     where -1 represents the min value from the columns and 1 is the max.
+
+    Parameters
+    ----------
+    dataset: 2d array
+
+    Returns
+    -------
+    norm_dataset: 2d array
+        Transformed dataset with values ranging from -1 to 1.
     """
     m = dataset.shape[1]
     min_cols = np.array([np.min(dataset[:,i]) for i in range(m)])
@@ -19,6 +29,7 @@ def load_dataset(dataset_name):
     where X is a 2d array containing the inputs of the dataset and
     y are the labels.
     """
+    dataset_name = dataset_name + '.txt'
     path = os.path.join(os.path.dirname(__file__), 'datasets')
     dataset_name = os.path.join(path, dataset_name)
     dataset = np.genfromtxt(dataset_name, delimiter=',')
@@ -26,6 +37,11 @@ def load_dataset(dataset_name):
     return X, y
 
 
+
+def load_clustering_params(dataset_name, index_eval_func):
+    return 0
+
+
 if __name__ == '__main__':
-    X, y = load_dataset('ionosphereInput.data')
+    X, y = load_dataset('ionosphere.data')
     print(norm_plus_minus_1(X))

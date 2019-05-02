@@ -34,5 +34,28 @@
         "square_sum", "rosenbrock", "schwefel_222", "quartic_noise", 
         "rastrigin", "griewank", "ackley", "schwefel_226", 
         "penalty_1", "penalty_2"
-    ]
+    ],
+    "clustering":
+    {
+        "diabetes":
+        {
+            "n_clusters":[2, 6, 10]
+        },
+        "ionosphere":
+        {
+            "n_clusters":[2, 6, 10]
+        },
+        "iris":
+        {
+            "n_clusters":[3, 9, 15]
+        },
+        "wine":
+        {
+            "n_clusters":[3, 9, 15]
+        },
+        "wdbc":
+        {
+            "n_clusters":[2, 6, 10]
+        }
+    }
 }
