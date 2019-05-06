@@ -37,7 +37,8 @@ def save_results(algorithm, benchmark_func, df_results):
 
 
 def create_grid_params(dict_params):
-    """Transform a dictionary that returns lists to a list
+    """
+    Transform a dictionary that returns lists to a list
     of dictionaries containing all possible combination of 
     parameters (cartesian product).
 
@@ -47,6 +48,10 @@ def create_grid_params(dict_params):
                 {'max_iters':100, 'pop_size':50},
                 {'max_iters':200, 'pop_size':30},
                 {'max_iters':200, 'pop_size':50}]
+
+    Parameters
+    ----------
+    dict_params: dict
 
     Returns
     -------
@@ -180,11 +185,30 @@ def run_pso_experiments(list_params, func_name, n_runs):
     return df_results
 
 
+def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
+                                   list_cluster_params, func_name, n_runs,
+                                   dataset_name):
+    """
+    """
+
+
+
 def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
                            n_runs):
     """
     Run experiments with the HGAPSO algorithm 'n_run' times for
     each set of parameters.
+
+    Parameters
+    ----------
+    list_pso_params: dict
+        Dictionary containing all PSO parameters tested.
+    list_ga_params: didct
+        Dcitionary containing all GA parameters.
+    func_name: string
+        Name of function.
+    n_runs: int
+        Number of times the experiment is run.
     """
     all_params = {}
     all_params.update(list_pso_params)
@@ -252,7 +276,7 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
     
     pso_ga_params = create_grid_params(all_params)
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
-    func_params = {"eval_func":eval_func, "l_bound":l_bound, 
+    func_params = {"eval_func":eval_func, "l_bound":l_bound,
             "u_bound":u_bound, "task":task}
 
     df_results = pd.DataFrame(
