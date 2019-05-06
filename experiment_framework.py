@@ -198,6 +198,7 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
     """
     Run experiments with the HGAPSO algorithm 'n_run' times for
     each set of parameters.
+<<<<<<< HEAD
 
     Parameters
     ----------
@@ -209,6 +210,8 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
         Name of function.
     n_runs: int
         Number of times the experiment is run.
+=======
+>>>>>>> 58b889bcc360e0c9facf9efe9626f0d0ab382ad6
     """
     all_params = {}
     all_params.update(list_pso_params)
