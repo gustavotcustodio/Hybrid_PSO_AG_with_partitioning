@@ -39,23 +39,28 @@
     {
         "diabetes":
         {
-            "n_clusters":[2, 6, 10]
+            "n_clusters":[2, 6, 10],
+            "n_attrib": 10
         },
         "ionosphere":
         {
-            "n_clusters":[2, 6, 10]
+            "n_clusters":[2, 6, 10],
+            "n_attrib": 10
         },
         "iris":
         {
-            "n_clusters":[3, 9, 15]
+            "n_clusters":[3, 9, 15],
+            "n_attrib": 10
         },
         "wine":
         {
-            "n_clusters":[3, 9, 15]
+            "n_clusters":[3, 9, 15],
+            "n_attrib": 10
         },
         "wdbc":
         {
-            "n_clusters":[2, 6, 10]
+            "n_clusters":[2, 6, 10],
+            "n_attrib": 10
         }
     }
 }

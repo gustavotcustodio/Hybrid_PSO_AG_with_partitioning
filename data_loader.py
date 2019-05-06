@@ -2,6 +2,7 @@ import numpy as np
 import math
 import random
 import os
+import functions
 
 
 def norm_plus_minus_1(dataset):
@@ -35,11 +36,6 @@ def load_dataset(dataset_name):
     dataset = np.genfromtxt(dataset_name, delimiter=',')
     X, y = dataset[:,:-1], dataset[:,-1]
     return X, y
-
-
-
-def load_clustering_params(dataset_name, index_eval_func):
-    return 0
 
 
 if __name__ == '__main__':

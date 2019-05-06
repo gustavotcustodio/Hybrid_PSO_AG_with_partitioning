@@ -11,8 +11,6 @@ import os
 def read_json(file_name):
     """
     Read a Json file with the parameters for optimization algorithms.
-    
-    
     """
     with open(file_name) as json_file:
         params = json.load (json_file)
@@ -65,9 +63,90 @@ def create_grid_params(dict_params):
     return final_params
 
 
+def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
+                                func_name, n_runs, dataset_name):
+    """
+    Execute experiments using the PSO algorithm 'n_runs' times for each group 
+    of PSO parameters, a clustering evaluation index and a dataset.
+
+    Parameters
+    ----------
+    list_pso_params: dict
+        Dictionary containing lists of different values for parameters.
+    list_cluster_params: dict
+        Parameters for clustering data (n_clusters, n_attrib).
+    func_name: string
+        Name of benchmark function.
+    n_runs: int
+        Number of runs for same parameter.
+    dataset_name: string
+
+    Returns
+    -------
+    df_results: Dataframe
+        Dataframe containing the results for the group of parameters.
+    """
+    n_attrib = list_cluster_params[dataset_name]['n_attrib']
+    particle_sizes = [n_attrib*c 
+            for c in list_cluster_params[dataset_name]['n_clusters']]
+
+    list_pso_params[dataset_name]['particle_size'] = particle_sizes
+
+    eval_func, task = functions.get_cluster_index(func_name, dataset_name)
+
+    df_results = pd.DataFrame(columns=['run', 'fitness', 'omega', 'c1', 'c2',
+                              'n_clusters', 'max_iters', 'pop_size'])
+    # Create all permutations of params.
+    pso_params = create_grid_params(list_pso_params[dataset_name])
+    
+    n_params = len(pso_params)
+    index_params = 1
+    print(f'======== Clustering eval index: {func_name} ========')
+    for p in pso_params:
+        print(f'======== Parameters {index_params} of {n_params} ========')
+        for run in range(n_runs):
+            
+            print(f'-------- PSO - run {run+1} --------')
+            _, _, best_evals = pso.run_pso(
+                    eval_func=eval_func, consts=p['consts'], 
+                    max_iters=p['max_iters'], pop_size=p['pop_size'],
+                    particle_size=p['particle_size'], l_bound=-1.0,
+                    u_bound=1.0, task=task
+            )
+            n_iters = len(best_evals)
+            n_clusters = int(p['particle_size']/n_attrib)
+            df_new_res = pd.DataFrame(
+                    {'run':[run+1]*n_iters,
+                    'fitness':best_evals,
+                    'omega':[p['consts'][0]]*n_iters,
+                    'c1':[p['consts'][1]]*n_iters,
+                    'c2':[p['consts'][2]]*n_iters,
+                    'n_clusters':[n_clusters]*n_iters}
+                    )
+            df_results = df_results.append(df_new_res, ignore_index=True)
+        index_params += 1
+        #TODO
+    return df_results
+        
+
 def run_pso_experiments(list_params, func_name, n_runs):
-    """Execute experiments with the PSO algorithm 'n_runs' times for each
+    """
+    Execute experiments with the PSO algorithm 'n_runs' times for each
     group of PSO parameters and a given benchmark function.
+
+    Parameters
+    ----------
+    list_params: dict
+        Dictionary containing lists of different values for parameters.
+    func_name: string
+        Name of benchmark function.
+    n_runs: int
+        Number of runs for same parameter.
+
+    Returns
+    -------
+    df_results: Dataframe
+        Dataframe containing the results for the group of parameters.
     """
     pso_params = create_grid_params(list_params)
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
@@ -105,7 +184,8 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
                            n_runs):
     """
     Run experiments with the HGAPSO algorithm 'n_run' times for
-    each set of parameters."""
+    each set of parameters.
+    """
     all_params = {}
     all_params.update(list_pso_params)
     del list_ga_params['prob_cross']

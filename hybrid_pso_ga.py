@@ -75,7 +75,7 @@ def split_and_crossover (population, n_particles_part, n_vars_part,
 
             subpop = population [chrom:last_chrom, var:last_var]
             # Get the offsprings and their parents
-            offsprings, parents = ga.crossover (subpop, prob_cross, c)
+            offsprings, parents = ga.arith_crossover(subpop, prob_cross, c)
 
             if offsprings is not None:
                 '''Since the offsprings are related to a subspace, they 
@@ -119,9 +119,9 @@ def run_hpsoga (pso_params, ga_params, eval_func, n_particles_part,
                             n_vars_part, ga_params['prob_cross'], ga_params['c'])
         if new_particles is not None:
             # Add new candidate solutions to population
-            selected_pop = np.append (selected_pop, new_particles, axis = 0)
+            selected_pop = np.append (selected_pop, new_particles, axis=0)
         # Apply mutation
-        population = ga.mutation (selected_pop, ga_params['prob_mut'], 
+        population = ga.arith_mutation(selected_pop, ga_params['prob_mut'], 
                             pso_params['l_bound'], pso_params['u_bound'])
 
         fitness_vals = np.apply_along_axis (eval_func, 1, population) 
