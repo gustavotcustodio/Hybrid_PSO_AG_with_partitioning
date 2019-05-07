@@ -14,9 +14,15 @@
     {
         "prob_cross": [0.8],
         "prob_mut": [0.02, 0.05, 0.2],
+<<<<<<< HEAD
         "pop_ga": [10],
         "c": [0.5],
         "n_gens": [15]
+=======
+        "c": [0.5],
+        "n_gens": [10],
+        "pop_size_ga": [15]
+>>>>>>> 74c7e7bf947609b9e309e7cf939ae1b4742980e5
     },
     "hpsoga":
     {
@@ -39,6 +45,7 @@
     {
         "diabetes":
         {
+<<<<<<< HEAD
             "n_clusters":[2, 6, 10],
             "n_attrib": 10
         },
@@ -61,6 +68,25 @@
         {
             "n_clusters":[2, 6, 10],
             "n_attrib": 10
+=======
+            "n_clusters":[2, 6, 10]
+        },
+        "ionosphere":
+        {
+            "n_clusters":[2, 6, 10]
+        },
+        "iris":
+        {
+            "n_clusters":[3, 9, 15]
+        },
+        "wine":
+        {
+            "n_clusters":[3, 9, 15]
+        },
+        "wdbc":
+        {
+            "n_clusters":[2, 6, 10]
+>>>>>>> 74c7e7bf947609b9e309e7cf939ae1b4742980e5
         }
     }
 }
