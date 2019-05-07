@@ -26,11 +26,23 @@ def norm_plus_minus_1(dataset):
 
 
 def load_dataset(dataset_name):
-    """Load a dataset in a 2d array. Split the 2d array in X and y,
+    """
+    Load a dataset in a 2d array. Split the 2d array in X and y,
     where X is a 2d array containing the inputs of the dataset and
     y are the labels.
+
+    Parameters
+    ----------
+    dataset_name: string
+
+    Returns
+    -------
+    X: 2d array
+        Dataset features.
+    y: 1d array
+        Dataset labels.
     """
-    dataset_name = dataset_name + '.txt'
+    dataset_name = dataset_name + '.data'
     path = os.path.join(os.path.dirname(__file__), 'datasets')
     dataset_name = os.path.join(path, dataset_name)
     dataset = np.genfromtxt(dataset_name, delimiter=',')

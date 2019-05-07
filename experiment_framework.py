@@ -11,14 +11,24 @@ import os
 def read_json(file_name):
     """
     Read a Json file with the parameters for optimization algorithms.
+
+    Parameters
+    ----------
+    file_name: string
+
+    Return
+    ------
+    params: dict
+        Dictionary with parameters.
     """
     with open(file_name) as json_file:
-        params = json.load (json_file)
+        params = json.load(json_file)
     return params
 
 
 def save_results(algorithm, benchmark_func, df_results):
-    """Save the results of experiments to a csv file.
+    """
+    Save the results of experiments to a csv file.
     
     Parameters
     ----------
@@ -91,21 +101,22 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
     df_results: Dataframe
         Dataframe containing the results for the group of parameters.
     """
-    n_attrib = list_cluster_params[dataset_name]['n_attrib']
-    particle_sizes = [n_attrib*c 
-            for c in list_cluster_params[dataset_name]['n_clusters']]
+    n_attrib = list_cluster_params['n_attrib']
+    particle_sizes = [n_attrib*c  for c in list_cluster_params['n_clusters']]
 
-    list_pso_params[dataset_name]['particle_size'] = particle_sizes
+    list_pso_params['particle_size'] = particle_sizes
 
     eval_func, task = functions.get_cluster_index(func_name, dataset_name)
 
     df_results = pd.DataFrame(columns=['run', 'fitness', 'omega', 'c1', 'c2',
                               'n_clusters', 'max_iters', 'pop_size'])
     # Create all permutations of params.
-    pso_params = create_grid_params(list_pso_params[dataset_name])
+    pso_params = create_grid_params(list_pso_params)
     
     n_params = len(pso_params)
     index_params = 1
+    print(pso_params[0])
+
     print(f'======== Clustering eval index: {func_name} ========')
     for p in pso_params:
         print(f'======== Parameters {index_params} of {n_params} ========')
@@ -189,8 +200,28 @@ def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
                                    list_cluster_params, func_name, n_runs,
                                    dataset_name):
     """
-    """
+    Run experiments with the HGAPSO algorithm for clustering optimization
+    problems. Each experiment for each set of params executes 'n_run' times.
 
+    Parameters
+    ----------
+    list_pso_params: dict
+        Dictionary containing all PSO parameters tested.
+    list_ga_params: dict
+        Dictionary containing all GA parameters.
+    list_cluster_params: dict
+        Dictionary containing clustering params.
+    func_name: string
+        Name of function.
+    n_runs: int
+        Number of times the experiment is executed.
+    dataset_name: string
+
+    Returns
+    -------
+    df_results: Dataframe
+    """
+    all_params = {}
 
 
 def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
@@ -198,20 +229,21 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
     """
     Run experiments with the HGAPSO algorithm 'n_run' times for
     each set of parameters.
-<<<<<<< HEAD
 
     Parameters
     ----------
     list_pso_params: dict
         Dictionary containing all PSO parameters tested.
-    list_ga_params: didct
-        Dcitionary containing all GA parameters.
+    list_ga_params: dict
+        Dictionary containing all GA parameters.
     func_name: string
         Name of function.
     n_runs: int
-        Number of times the experiment is run.
-=======
->>>>>>> 58b889bcc360e0c9facf9efe9626f0d0ab382ad6
+        Number of times the experiment is executed.
+
+    Returns
+    -------
+    df_results: Dataframe
     """
     all_params = {}
     all_params.update(list_pso_params.copy())
@@ -318,6 +350,10 @@ def run_experiments(n_runs, params):
     
     for alg in algorithms:
         for func in benchmark_funcs:
+            run_cluster_pso_experiments(params['pso'], 
+                    params['clustering']['ionosphere'], func, n_runs,
+                    'ionosphere')
+
             if alg == 'pso':
                 df_results = run_pso_experiments(params['pso'], func, n_runs)
             elif alg == 'hgapso':
