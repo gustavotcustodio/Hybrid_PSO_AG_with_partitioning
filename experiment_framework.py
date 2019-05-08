@@ -108,14 +108,12 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
 
     eval_func, task = functions.get_cluster_index(func_name, dataset_name)
 
-    df_results = pd.DataFrame(columns=['run', 'fitness', 'omega', 'c1', 'c2',
-                              'n_clusters', 'max_iters', 'pop_size'])
+    df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness','max_iters',
+                              'n_clusters', 'omega', 'pop_size', 'run'])
     # Create all permutations of params.
     pso_params = create_grid_params(list_pso_params)
-    
     n_params = len(pso_params)
     index_params = 1
-    print(pso_params[0])
 
     print(f'======== Clustering eval index: {func_name} ========')
     for p in pso_params:
@@ -127,21 +125,21 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
                     eval_func=eval_func, consts=p['consts'], 
                     max_iters=p['max_iters'], pop_size=p['pop_size'],
                     particle_size=p['particle_size'], l_bound=-1.0,
-                    u_bound=1.0, task=task
-            )
+                    u_bound=1.0, task=task)
             n_iters = len(best_evals)
             n_clusters = int(p['particle_size']/n_attrib)
             df_new_res = pd.DataFrame(
-                    {'run':[run+1]*n_iters,
-                    'fitness':best_evals,
-                    'omega':[p['consts'][0]]*n_iters,
-                    'c1':[p['consts'][1]]*n_iters,
+                    {'c1':[p['consts'][1]]*n_iters,
                     'c2':[p['consts'][2]]*n_iters,
-                    'n_clusters':[n_clusters]*n_iters}
+                    'fitness':best_evals,
+                    'max_iters':[p['max_iters']]*n_iters,
+                    'n_clusters':[n_clusters]*n_iters,
+                    'omega':[p['consts'][0]]*n_iters,
+                    'pop_size':[p['pop_size']]*n_iters,
+                    'run':[run+1]*n_iters}
                     )
             df_results = df_results.append(df_new_res, ignore_index=True)
         index_params += 1
-        #TODO
     return df_results
         
 
@@ -167,29 +165,32 @@ def run_pso_experiments(list_params, func_name, n_runs):
     pso_params = create_grid_params(list_params)
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
 
-    df_results = pd.DataFrame(columns=['run', 'fitness', 'omega', 'c1', 'c2'])
+    df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness', 'max_iters',
+                              'omega', 'particle_size', 'pop_size', 'run'])
 
     print(f'======== Benchmark function: {func_name} ========')
-    
     n_params = len(pso_params)
     index_params = 1
     for p in pso_params:
         print(f'======== Parameters {index_params} of {n_params} ========')
         for run in range(n_runs):
             print(f'-------- PSO - run {run+1} --------')
-
             _, _, best_evals = pso.run_pso(
                     eval_func=eval_func, consts=p['consts'], 
                     max_iters=p['max_iters'], pop_size=p['pop_size'],
                     particle_size=p['particle_size'], l_bound=l_bound,
                     u_bound=u_bound, task=task
                     )
+            n_iters = len(best_evals)
             df_new_res = pd.DataFrame(
-                    {'run':[run+1]*len(best_evals),
+                    {'c1':[p['consts'][1]]*n_iters,
+                    'c2':[p['consts'][2]]*n_iters,
                     'fitness':best_evals,
-                    'omega':[p['consts'][0]]*len(best_evals),
-                    'c1':[p['consts'][1]]*len(best_evals),
-                    'c2':[p['consts'][2]]*len(best_evals)}
+                    'max_iters':[p['max_iters']]*n_iters,
+                    'omega':[p['consts'][0]]*n_iters,
+                    'particle_size':[p['particle_size']]*n_iters,
+                    'pop_size':[p['pop_size']]*n_iters,
+                    'run':[run+1]*n_iters}
                     )
             df_results = df_results.append(df_new_res, ignore_index=True)
         index_params += 1
@@ -256,10 +257,11 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
     pso_ga_params = create_grid_params(all_params)
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
     func_params = {"eval_func":eval_func, "l_bound":l_bound, 
-            "u_bound":u_bound, "task":task}
+                    "u_bound":u_bound, "task":task}
 
     df_results = pd.DataFrame(
-            columns=['run', 'fitness', 'omega', 'c1', 'c2', 'prob_mut'])
+            columns=['c1', 'c2', 'fitness', 'max_iters', 'omega',
+            'particle_size', 'pop_size', 'prob_mut', 'run'])
 
     print(f'======== Benchmark function: {func_name} ========')
     n_params = len(pso_ga_params)
@@ -271,17 +273,17 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
             _, _, best_evals = hgapso.run_hgapso(alg_params=p,
                                                  func_params=func_params)
             n_iters = len(best_evals)
-            new_res_dict = {'run':[run+1]*n_iters,
-                    'fitness':best_evals,
-                    'pop_size':[p['pop_size']]*n_iters,
-                    'particle_size':[p['particle_size']]*n_iters,
-                    'omega':[p['consts'][0]]*n_iters,
+            new_res_dict = {
                     'c1':[p['consts'][1]]*n_iters,
                     'c2':[p['consts'][2]]*n_iters,
+                    'fitness':best_evals,
+                    "max_iters":[p['max_iters']]*n_iters,
+                    'omega':[p['consts'][0]]*n_iters,
+                    'particle_size':[p['particle_size']]*n_iters,
+                    'pop_size':[p['pop_size']]*n_iters,
                     'prob_mut':[p['prob_mut']]*n_iters,
-                    "max_iters":[p['max_iters']]*n_iters}
+                    'run':[run+1]*n_iters}
             df_new_res = pd.DataFrame(new_res_dict)
-
             df_results = df_results.append(df_new_res, ignore_index=True)
         index_params += 1
     return df_results

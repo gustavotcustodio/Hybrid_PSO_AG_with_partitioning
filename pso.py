@@ -286,8 +286,8 @@ def run_pso(eval_func, consts, max_iters=100, pop_size=100, particle_size=10,
         global_evals.append(eval_global)
     return particles, np.array(global_solutions), global_evals
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     consts = [0.7, 1.4, 1.4]
     eval_func = functions.rastrigin
 
