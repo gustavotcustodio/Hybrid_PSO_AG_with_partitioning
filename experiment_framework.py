@@ -78,6 +78,57 @@ def create_grid_params(dict_params):
     return final_params
 
 
+def add_results_to_df(params, df_results, n_iters, best_evals, run,
+                      algorithm, n_clusters=None):
+    """
+    Add the results of current experiments to the final Dataframe.
+
+    Parameters
+    ----------
+    params: dict
+        Dictionary containing the parameters of experiments.
+    df_results: Dataframe
+        Dataframe containing the results of experiments.
+    n_iters: int
+        Number of iterations.
+    best_evals: list[float]
+        Fitness of best candidate solution for each iteration.
+    run: int
+        Current execution of the algorithm.
+    algorithm: string
+        Name of algorithm.
+    n_clusters: int or None
+        Number of clusters for clustering optimization problems
+        (None if it is not a clustering optimization problem).
+
+    Returns
+    -------
+    df_results: Dataframe
+        Dataframe containg the results of experiments so far.
+    """
+    info_to_input = {'c1':[params['consts'][1]]*n_iters,
+                    'c2':[params['consts'][2]]*n_iters,
+                    'fitness':best_evals,
+                    'max_iters':[params['max_iters']]*n_iters,
+                    'omega':[params['consts'][0]]*n_iters,
+                    'pop_size':[params['pop_size']]*n_iters,
+                    'run':[run+1]*n_iters}
+    if algorithm == 'logapso':
+        info_to_input.update({'prob_run_ga':[params['prob_run_ga']]*n_iters,
+                              'step_size':[params['step_size']]*n_iters})
+    elif algorithm == 'hgapso':
+        info_to_input.update({'prob_mut':[params['prob_mut']]*n_iters})
+
+    if n_clusters is not None:
+        info_to_input.update({'n_clusters':[n_clusters]*n_iters})
+    else:
+        info_to_input.update(
+                {'particle_size':[params['particle_size']]*n_iters})
+    
+    return df_results.append(pd.DataFrame(info_to_input),
+                             ignore_index=True)                
+
+
 def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
                                 func_name, n_runs, dataset_name):
     """
@@ -109,7 +160,7 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
     eval_func, task = functions.get_cluster_index(func_name, dataset_name)
 
     df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness','max_iters',
-                              'n_clusters', 'omega', 'pop_size', 'run'])
+                              'omega', 'pop_size', 'run', 'n_clusters'])
     # Create all permutations of params.
     pso_params = create_grid_params(list_pso_params)
     n_params = len(pso_params)
@@ -122,26 +173,17 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
             
             print(f'-------- PSO - run {run+1} --------')
             _, _, best_evals = pso.run_pso(
-                    eval_func=eval_func, consts=p['consts'], 
+                    eval_func=eval_func, consts=p['consts'],
                     max_iters=p['max_iters'], pop_size=p['pop_size'],
                     particle_size=p['particle_size'], l_bound=-1.0,
                     u_bound=1.0, task=task)
             n_iters = len(best_evals)
             n_clusters = int(p['particle_size']/n_attrib)
-            df_new_res = pd.DataFrame(
-                    {'c1':[p['consts'][1]]*n_iters,
-                    'c2':[p['consts'][2]]*n_iters,
-                    'fitness':best_evals,
-                    'max_iters':[p['max_iters']]*n_iters,
-                    'n_clusters':[n_clusters]*n_iters,
-                    'omega':[p['consts'][0]]*n_iters,
-                    'pop_size':[p['pop_size']]*n_iters,
-                    'run':[run+1]*n_iters}
-                    )
-            df_results = df_results.append(df_new_res, ignore_index=True)
+            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
+                                           run, 'pso', n_clusters=n_clusters)
         index_params += 1
     return df_results
-        
+
 
 def run_pso_experiments(list_params, func_name, n_runs):
     """
@@ -166,7 +208,7 @@ def run_pso_experiments(list_params, func_name, n_runs):
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
 
     df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness', 'max_iters',
-                              'omega', 'particle_size', 'pop_size', 'run'])
+                              'omega', 'pop_size', 'run', 'particle_size'])
 
     print(f'======== Benchmark function: {func_name} ========')
     n_params = len(pso_params)
@@ -179,20 +221,10 @@ def run_pso_experiments(list_params, func_name, n_runs):
                     eval_func=eval_func, consts=p['consts'], 
                     max_iters=p['max_iters'], pop_size=p['pop_size'],
                     particle_size=p['particle_size'], l_bound=l_bound,
-                    u_bound=u_bound, task=task
-                    )
+                    u_bound=u_bound, task=task)
             n_iters = len(best_evals)
-            df_new_res = pd.DataFrame(
-                    {'c1':[p['consts'][1]]*n_iters,
-                    'c2':[p['consts'][2]]*n_iters,
-                    'fitness':best_evals,
-                    'max_iters':[p['max_iters']]*n_iters,
-                    'omega':[p['consts'][0]]*n_iters,
-                    'particle_size':[p['particle_size']]*n_iters,
-                    'pop_size':[p['pop_size']]*n_iters,
-                    'run':[run+1]*n_iters}
-                    )
-            df_results = df_results.append(df_new_res, ignore_index=True)
+            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
+                                           run, 'pso')
         index_params += 1
     return df_results
 
@@ -211,7 +243,7 @@ def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
     list_ga_params: dict
         Dictionary containing all GA parameters.
     list_cluster_params: dict
-        Dictionary containing clustering params.
+        Dictionary containing clustering params.df_results
     func_name: string
         Name of function.
     n_runs: int
@@ -222,7 +254,7 @@ def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
     -------
     df_results: Dataframe
     """
-    all_params = {}
+    return pd.DataFrame()
 
 
 def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
@@ -258,10 +290,9 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
     func_params = {"eval_func":eval_func, "l_bound":l_bound, 
                     "u_bound":u_bound, "task":task}
-
     df_results = pd.DataFrame(
             columns=['c1', 'c2', 'fitness', 'max_iters', 'omega',
-            'particle_size', 'pop_size', 'prob_mut', 'run'])
+                     'pop_size', 'prob_mut', 'run', 'particle_size'])
 
     print(f'======== Benchmark function: {func_name} ========')
     n_params = len(pso_ga_params)
@@ -273,18 +304,8 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
             _, _, best_evals = hgapso.run_hgapso(alg_params=p,
                                                  func_params=func_params)
             n_iters = len(best_evals)
-            new_res_dict = {
-                    'c1':[p['consts'][1]]*n_iters,
-                    'c2':[p['consts'][2]]*n_iters,
-                    'fitness':best_evals,
-                    "max_iters":[p['max_iters']]*n_iters,
-                    'omega':[p['consts'][0]]*n_iters,
-                    'particle_size':[p['particle_size']]*n_iters,
-                    'pop_size':[p['pop_size']]*n_iters,
-                    'prob_mut':[p['prob_mut']]*n_iters,
-                    'run':[run+1]*n_iters}
-            df_new_res = pd.DataFrame(new_res_dict)
-            df_results = df_results.append(df_new_res, ignore_index=True)
+            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
+                                           run, 'hgapso')
         index_params += 1
     return df_results
 
@@ -309,12 +330,11 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
     Returns
     -------
     df_results: Dataframe
-        Dataframe containing the results of experiments.
     """
     all_params = {}
-    all_params.update(list_pso_params)
-    all_params.update(list_ga_params)
-    all_params.update(list_logapso_params)
+    all_params.update(list_pso_params.copy())
+    all_params.update(list_ga_params.copy())
+    all_params.update(list_logapso_params.copy())
     
     pso_ga_params = create_grid_params(all_params)
     eval_func, l_bound, u_bound, task = functions.get_function(func_name)
@@ -322,7 +342,9 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
             "u_bound":u_bound, "task":task}
 
     df_results = pd.DataFrame(
-            columns=['run', 'fitness', 'omega', 'c1', 'c2'])
+            columns=['c1', 'c2', 'fitness', 'max_iters', 'omega',
+            'pop_size', 'prob_run_ga', 'run', 'step_size', 'particle_size'])
+
     for p in pso_ga_params:
         for run in range(n_runs):
             print(f'-------- LOGAPSO - run {run+1} --------')
@@ -331,21 +353,23 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
                     prob_run_ga=p['prob_run_ga'],
                     step_size=p['step_size']
                     )
-            df_new_res = pd.DataFrame(
-                    {'run':[run+1]*len(best_evals),
-                    'fitness':best_evals,
-                    'omega':[p['consts'][0]]*len(best_evals),
-                    'c1':[p['consts'][1]]*len(best_evals),
-                    'c2':[p['consts'][2]]*len(best_evals),
-                    'prob_run_ga':[p['prob_run_ga']]*len(best_evals),
-                    'step_size':[p['step_size']]*len(best_evals)}
-                    )
-            df_results = df_results.append(df_new_res, ignore_index=True)
+            n_iters = len(best_evals)
+            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
+                                           run, 'logapso')
     return df_results
 
 
 def run_experiments(n_runs, params):
-    """Run a group of experiments for each optimisation algorithm."""
+    """
+    Run a group of experiments for each optimisation algorithm.
+
+    Parameters
+    ----------
+    n_runs: int
+        Number of executions of the same algorithm with the same set of parameters.
+    params: dict
+        Dictionary containing the parameters for the experiments.
+    """
     # Number of times each group of experiments is run
     algorithms = ['logapso']
     benchmark_funcs = params['function']
@@ -363,9 +387,8 @@ def run_experiments(n_runs, params):
                         params['pso'], params['ga'], func, n_runs)
             elif alg == 'logapso':
                 df_results = run_logapso_experiments(
-                        params['pso'], params['ga'], params['logapso'], 
+                        params['pso'], params['ga'], params['logapso'],
                         func, n_runs)
-
             save_results(alg, func, df_results)
 
 

@@ -4,7 +4,7 @@ import pso
 import functions
 
 def split_particles (particles, n_particles_part, n_vars_part):
-    '''
+    """
     Split all PSO particles in partitions.
     Example of two particles: [[1,2,6,3,1,1], [9,9,1,2,4,7]]
     splitted in 2 subpops and 3 subspaces:
@@ -26,7 +26,7 @@ def split_particles (particles, n_particles_part, n_vars_part):
     -------
     partitions: 3d array [partition, particle, variable]
         Particles splitted in different partitions.
-    '''
+    """
     n_subpops = int (particles.shape[0] / n_particles_part)
     n_subspaces = int (particles.shape[1] / n_vars_part)
 
@@ -35,7 +35,7 @@ def split_particles (particles, n_particles_part, n_vars_part):
     return np.concatenate (subspaces)
  
 def merge_particles (partitions, n_subspaces):
-    '''
+    """
     Merge particles splitted in split_particles method.
 
     Parameters
@@ -50,18 +50,18 @@ def merge_particles (partitions, n_subspaces):
     particles: 2d array
         Partitions of particles splitted in a 3d array
         merged again in a 2d array.
-    '''
+    """
     # 2d array containing variables of particles
-    particles_vars = np.concatenate ( partitions )
+    particles_vars = np.concatenate(partitions)
 
     # 3d array with slices of particles splitted in n_subspaces
-    particles_subspaces = np.split (particles_vars, n_subspaces)
-    return np.concatenate (particles_subspaces, axis=1)
+    particles_subspaces = np.split(particles_vars, n_subspaces)
+    return np.concatenate(particles_subspaces, axis=1)
 
 def split_and_crossover (population, n_particles_part, n_vars_part, 
     prob_cross, c):
-    '''
-    '''
+    """
+    """
     cross_pop = None
     n_particles = population.shape[0]
     n_vars = population.shape[1]
@@ -78,10 +78,10 @@ def split_and_crossover (population, n_particles_part, n_vars_part,
             offsprings, parents = ga.arith_crossover(subpop, prob_cross, c)
 
             if offsprings is not None:
-                '''Since the offsprings are related to a subspace, they 
-                have less variables than a candidate solution. Therefore, 
-                the parents are copied and the variables related to the 
-                offsprings are updated.'''
+                # Since the offsprings are related to a subspace, they 
+                # have less variables than a candidate solution. Therefore, 
+                # the parents are copied and the variables related to the 
+                # offsprings are updated.
                 new_chroms = np.copy (population [chrom:last_chrom][parents])
                 new_chroms [:,var:last_var] = offsprings
                 if cross_pop is None:
@@ -92,8 +92,8 @@ def split_and_crossover (population, n_particles_part, n_vars_part,
 
 def run_hpsoga (pso_params, ga_params, eval_func, n_particles_part, 
     n_vars_part, max_iters = 100):
-    '''
-    '''                
+    """
+    """                
     population = None
     global_best = None
     eval_global = float('inf') if pso_params['task'] == 'min' else -float('inf')

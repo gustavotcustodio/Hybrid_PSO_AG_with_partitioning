@@ -6,8 +6,8 @@ import functions
 import random
 
 def run_hgapso(alg_params, func_params):
-    """Run the Hgapso algorithm presentend by
-    ***Reference***
+    """
+    Run the Hgapso algorithm presentend by ***
 
     Parameters
     ----------
@@ -21,6 +21,15 @@ def run_hgapso(alg_params, func_params):
         upper bound and the type of problem (minimization or maximization).
         func_params = {eval_func:1d_function, l_bound:float, u_bound:float,
             task:'min' or 'max'}
+
+    Returns
+    -------
+    population: 2d array
+    best_pop: list[1d array]
+    best_fitness_values: list[float]
+
+    References
+    ----------
     """
     particle_size = alg_params['particle_size']
     pop_size = alg_params['pop_size']
