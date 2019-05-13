@@ -14,7 +14,6 @@ class TestExperimentsFramework(unittest.TestCase):
                         ]
         self.assertEqual(ef.create_grid_params(dict_params), self.expected)
 
-    @unittest.skip("too slow and already tested")
     def test_run_pso_experiments(self):
         # 12 possible combinations of parameters.
         pso_params = {
@@ -32,7 +31,6 @@ class TestExperimentsFramework(unittest.TestCase):
         # 12 x 50 x 5 = 3000
         self.assertEqual(pso_results.shape, (3000,8))
 
-    @unittest.skip("too slow and already tested")
     def test_cluster_run_pso_experiments(self):
         pso_params = {
             "pop_size": [18, 36],
@@ -54,7 +52,6 @@ class TestExperimentsFramework(unittest.TestCase):
         # 4 x 10 x 2 = 80
         self.assertEqual(pso_results.shape, (80, 8))
 
-    @unittest.skip("too slow and already tested")
     def test_run_hgapso_experiments(self):
         # 16 possible combinations of parameters.
         pso_params = {
@@ -77,7 +74,6 @@ class TestExperimentsFramework(unittest.TestCase):
         # 16 x 20 x 5 = 1600
         self.assertEqual(results.shape, (1600,9))
 
-    @unittest.skip("too slow and already tested")
     def test_run_cluster_hgapso_experiments(self):
         # 8 possible combinations of parameters.
         pso_params = {
@@ -106,7 +102,6 @@ class TestExperimentsFramework(unittest.TestCase):
         # 8 x 10 x 2 = 160
         self.assertEqual(results.shape, (160,9))
 
-    @unittest.skip("too slow and already tested")
     def test_run_logapso_experiments(self):
         # 4 possible combinations of parameters.
         pso_params = {
@@ -138,7 +133,7 @@ class TestExperimentsFramework(unittest.TestCase):
         pso_params = {
             "pop_size": [4, 8],
             "particle_size": [10],
-            "max_iters": [20],
+            "max_iters": [10],
             "consts": [[0.72, 1.49618, 1.49618]]}
         ga_params = {
             "prob_cross": [0.8],
@@ -161,9 +156,9 @@ class TestExperimentsFramework(unittest.TestCase):
                 pso_params, ga_params, logapso_params, cluster_params['iris'],
                 'davies_bouldin', n_runs=2, dataset_name='iris')
         self.assertEqual(list(results.columns), attributes)
-        # 4 combinations of params, 20 iterations, 2 runs.
-        # 4 x 20 x 2 = 160
-        self.assertEqual(results.shape, (160,11))
+        # 4 combinations of params, 10 iterations, 2 runs.
+        # 4 x 10 x 2 = 80
+        self.assertEqual(results.shape, (80,11))
 
 
 if __name__ == '__main__':

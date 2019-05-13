@@ -425,7 +425,22 @@ def run_cluster_logapso_experiments(list_pso_params, list_ga_params,
     df_results: Dataframe
         Dataframe containing the results for the group of parameters.
     """
-    return pd.DataFrame()
+    # Merge parameters of pso and ga in a single dict
+    all_params = merge_and_clean_params(
+            [list_pso_params, list_ga_params, list_logapso_params], 'logapso')
+            
+    # Number of datasets' attributes
+    n_attrib = list_cluster_params['n_attrib']
+    particle_sizes = [n_attrib*c for c in list_cluster_params['n_clusters']]
+
+    all_params['particle_size'] = particle_sizes
+    
+    df_results = pd.DataFrame(
+            columns=['c1', 'c2', 'fitness', 'max_iters', 'omega', 'pop_size', 
+            'run', 'prob_mut', 'prob_run_ga', 'step_size', 'n_clusters'])
+
+    return run_experiment('logapso', all_params, func_name, n_runs,
+                          df_results, dataset_name, n_attrib)
 
 
 def run_all_experiments(n_runs, params):
