@@ -8,6 +8,7 @@ import hgapso
 import functions
 import os
 
+
 def read_json(file_name):
     """
     Read a Json file with the parameters for optimization algorithms.
@@ -62,6 +63,7 @@ def create_grid_params(dict_params):
     Parameters
     ----------
     dict_params: dict
+        Dictionary containing parameters for experiments.
 
     Returns
     -------
@@ -76,6 +78,108 @@ def create_grid_params(dict_params):
     keys = dict_params.keys()
     final_params = [dict(zip(keys, params)) for params in cartesian_params]
     return final_params
+
+
+def merge_and_clean_params(lists_of_params_dicts, algorithm):
+    """
+    Merge the parameters used in an experiment.
+
+    Parameters
+    ----------
+    list_of_params_dicts: list[dict]
+        List containing all dicts of params for an algorithm.
+    algorithm: string
+        Algorithm for the parameteres.
+
+    Returns
+    -------
+    all_params: dict
+        Dictionary containing all parameters for the current experiment.
+    """
+    all_params = {}
+    for dict_params in lists_of_params_dicts:
+        all_params.update(dict_params.copy())
+    
+    if algorithm == 'hgapso':
+        del all_params['prob_cross']
+        del all_params['c']
+        del all_params['n_gens']
+        del all_params['pop_ga']
+    return all_params
+
+
+def run_experiment(algorithm, parameters, func_name, n_runs,
+                   df_results, dataset_name=None, n_attrib=1):
+    """
+    Parameters
+    ----------
+    algorithm: string
+        Name of algorithm.
+    parameters: dict
+        Parameters for the algorithm in the current experiment.
+    func_name: string
+    n_runs: int
+    df_results: DataFrame
+        Dataframe for saving the experiments results.
+    dataset_name: string
+        Takes the value 'None' if it's not a clustering optimisation problem.
+    n_attrib: int
+        Number of attributes for the dataset (Default value = 1).
+
+    Returns
+    -------
+    df_results: DataFrame
+        DataFrame containing the results of experiments.
+    """
+    if dataset_name is not None:
+        eval_func, task = functions.get_cluster_index(func_name, dataset_name)
+        l_bound, u_bound = -1.0, 1.0
+        print(f'======== Clustering eval index: {func_name} ========')
+    else:
+        eval_func, l_bound, u_bound, task = functions.get_function(func_name)
+        print(f'======== Benchmark function: {func_name} ========')
+
+    func_params = {"eval_func":eval_func, "l_bound":l_bound,
+                   "u_bound":u_bound, "task":task}
+    # create all permutations of parameters
+    grid_params = create_grid_params(parameters)
+    
+    n_params = len(grid_params)
+    index_params = 1
+
+    for p in grid_params:
+        print(f'======== Parameters {index_params} of {n_params} ========')
+        for run in range(n_runs):
+            print(f'-------- {algorithm} - run {run+1} --------')
+            if algorithm == 'pso':
+                _, _, best_evals = pso.run_pso(
+                        eval_func=eval_func, consts=p['consts'],
+                        max_iters=p['max_iters'], pop_size=p['pop_size'],
+                        particle_size=p['particle_size'], l_bound=l_bound,
+                        u_bound=u_bound, task=task)
+            elif algorithm == 'hgapso':
+                _, _, best_evals = hgapso.run_hgapso(alg_params=p,
+                                                     func_params=func_params)
+            else: # logapso
+                _, _, best_evals = logapso.run_logapso(
+                                    alg_params=p, func_params=func_params, 
+                                    prob_run_ga=p['prob_run_ga'],
+                                    step_size=p['step_size'])
+            n_iters = len(best_evals)
+            # This is a clustering optimization problem
+            if dataset_name is not None: 
+                # Each particle has C X F dimensions, where C is the number
+                # of clusters and F is the number of features for the dataset.
+                n_clusters = int(p['particle_size']/n_attrib)
+                df_results = add_results_to_df(
+                        p, df_results, n_iters, best_evals, run, algorithm,
+                        n_clusters)
+
+            else: # This is problem of benchmark function optimization
+                df_results = add_results_to_df(p, df_results, n_iters, 
+                                               best_evals, run, algorithm)
+        index_params += 1
+    return df_results
 
 
 def add_results_to_df(params, df_results, n_iters, best_evals, run,
@@ -114,7 +218,8 @@ def add_results_to_df(params, df_results, n_iters, best_evals, run,
                     'pop_size':[params['pop_size']]*n_iters,
                     'run':[run+1]*n_iters}
     if algorithm == 'logapso':
-        info_to_input.update({'prob_run_ga':[params['prob_run_ga']]*n_iters,
+        info_to_input.update({'prob_mut':[params['prob_mut']]*n_iters,
+                              'prob_run_ga':[params['prob_run_ga']]*n_iters,
                               'step_size':[params['step_size']]*n_iters})
     elif algorithm == 'hgapso':
         info_to_input.update({'prob_mut':[params['prob_mut']]*n_iters})
@@ -124,9 +229,31 @@ def add_results_to_df(params, df_results, n_iters, best_evals, run,
     else:
         info_to_input.update(
                 {'particle_size':[params['particle_size']]*n_iters})
-    
-    return df_results.append(pd.DataFrame(info_to_input),
-                             ignore_index=True)                
+    return df_results.append(pd.DataFrame(info_to_input), ignore_index=True)
+
+
+def run_pso_experiments(list_params, func_name, n_runs):
+    """
+    Execute experiments with the PSO algorithm 'n_runs' times for each
+    group of PSO parameters and a given benchmark function.
+
+    Parameters
+    ----------
+    list_params: dict
+        Dictionary containing lists of different values for parameters.
+    func_name: string
+        Name of benchmark function.
+    n_runs: int
+        Number of runs for same parameter.
+
+    Returns
+    -------
+    df_results: Dataframe
+        Dataframe containing the results for the group of parameters.
+    """
+    df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness', 'max_iters',
+                              'omega', 'pop_size', 'run', 'particle_size'])
+    return run_experiment('pso', list_params, func_name, n_runs, df_results)
 
 
 def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
@@ -157,104 +284,11 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
 
     list_pso_params['particle_size'] = particle_sizes
 
-    eval_func, task = functions.get_cluster_index(func_name, dataset_name)
-
     df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness','max_iters',
                               'omega', 'pop_size', 'run', 'n_clusters'])
-    # Create all permutations of params.
-    pso_params = create_grid_params(list_pso_params)
-    n_params = len(pso_params)
-    index_params = 1
-
-    print(f'======== Clustering eval index: {func_name} ========')
-    for p in pso_params:
-        print(f'======== Parameters {index_params} of {n_params} ========')
-        for run in range(n_runs):
-            
-            print(f'-------- PSO - run {run+1} --------')
-            _, _, best_evals = pso.run_pso(
-                    eval_func=eval_func, consts=p['consts'],
-                    max_iters=p['max_iters'], pop_size=p['pop_size'],
-                    particle_size=p['particle_size'], l_bound=-1.0,
-                    u_bound=1.0, task=task)
-            n_iters = len(best_evals)
-            n_clusters = int(p['particle_size']/n_attrib)
-            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
-                                           run, 'pso', n_clusters=n_clusters)
-        index_params += 1
-    return df_results
-
-
-def run_pso_experiments(list_params, func_name, n_runs):
-    """
-    Execute experiments with the PSO algorithm 'n_runs' times for each
-    group of PSO parameters and a given benchmark function.
-
-    Parameters
-    ----------
-    list_params: dict
-        Dictionary containing lists of different values for parameters.
-    func_name: string
-        Name of benchmark function.
-    n_runs: int
-        Number of runs for same parameter.
-
-    Returns
-    -------
-    df_results: Dataframe
-        Dataframe containing the results for the group of parameters.
-    """
-    pso_params = create_grid_params(list_params)
-    eval_func, l_bound, u_bound, task = functions.get_function(func_name)
-
-    df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness', 'max_iters',
-                              'omega', 'pop_size', 'run', 'particle_size'])
-
-    print(f'======== Benchmark function: {func_name} ========')
-    n_params = len(pso_params)
-    index_params = 1
-    for p in pso_params:
-        print(f'======== Parameters {index_params} of {n_params} ========')
-        for run in range(n_runs):
-            print(f'-------- PSO - run {run+1} --------')
-            _, _, best_evals = pso.run_pso(
-                    eval_func=eval_func, consts=p['consts'], 
-                    max_iters=p['max_iters'], pop_size=p['pop_size'],
-                    particle_size=p['particle_size'], l_bound=l_bound,
-                    u_bound=u_bound, task=task)
-            n_iters = len(best_evals)
-            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
-                                           run, 'pso')
-        index_params += 1
-    return df_results
-
-
-def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
-                                   list_cluster_params, func_name, n_runs,
-                                   dataset_name):
-    """
-    Run experiments with the HGAPSO algorithm for clustering optimization
-    problems. Each experiment for each set of params executes 'n_run' times.
-
-    Parameters
-    ----------
-    list_pso_params: dict
-        Dictionary containing all PSO parameters tested.
-    list_ga_params: dict
-        Dictionary containing all GA parameters.
-    list_cluster_params: dict
-        Dictionary containing clustering params.df_results
-    func_name: string
-        Name of function.
-    n_runs: int
-        Number of times the experiment is executed.
-    dataset_name: string
-
-    Returns
-    -------
-    df_results: Dataframe
-    """
-    return pd.DataFrame()
+       
+    return run_experiment('pso', list_pso_params, func_name, n_runs, 
+                          df_results, dataset_name, n_attrib)
 
 
 def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
@@ -277,37 +311,59 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
     Returns
     -------
     df_results: Dataframe
+        Dataframe containing the results for the group of parameters.
     """
-    all_params = {}
-    all_params.update(list_pso_params.copy())
-    all_params.update(list_ga_params.copy())
-    del all_params['prob_cross']
-    del all_params['c']
-    del all_params['n_gens']
-    del all_params['pop_size_ga']
+    all_params = merge_and_clean_params(
+            [list_pso_params, list_ga_params], 'hgapso')
 
-    pso_ga_params = create_grid_params(all_params)
-    eval_func, l_bound, u_bound, task = functions.get_function(func_name)
-    func_params = {"eval_func":eval_func, "l_bound":l_bound, 
-                    "u_bound":u_bound, "task":task}
     df_results = pd.DataFrame(
             columns=['c1', 'c2', 'fitness', 'max_iters', 'omega',
-                     'pop_size', 'prob_mut', 'run', 'particle_size'])
+                     'pop_size', 'run', 'prob_mut', 'particle_size'])
 
-    print(f'======== Benchmark function: {func_name} ========')
-    n_params = len(pso_ga_params)
-    index_params = 1
-    for p in pso_ga_params:
-        print(f'======== Parameters {index_params} of {n_params} ========')
-        for run in range(n_runs):
-            print(f'-------- HGAPSO - run {run+1} --------')
-            _, _, best_evals = hgapso.run_hgapso(alg_params=p,
-                                                 func_params=func_params)
-            n_iters = len(best_evals)
-            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
-                                           run, 'hgapso')
-        index_params += 1
-    return df_results
+    return run_experiment('hgapso', all_params, func_name, n_runs, df_results)
+
+
+def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
+                                   list_cluster_params, func_name, n_runs,
+                                   dataset_name):
+    """
+    Run experiments with the HGAPSO algorithm for clustering optimization
+    problems. Each experiment for each set of params executes 'n_run' times.
+
+    Parameters
+    ----------
+    list_pso_params: dict
+        Dictionary containing all PSO parameters tested.
+    list_ga_params: dict
+        Dictionary containing all GA parameters.
+    list_cluster_params: dict
+        Dictionary containing clustering params.
+    func_name: string
+        Name of function.
+    n_runs: int
+        Number of times the experiment is executed.
+    dataset_name: string
+
+    Returns
+    -------
+    df_results: Dataframe
+        Dataframe containing the results for the group of parameters.
+    """
+    # Merge parameters of pso and ga in a single dict
+    all_params = merge_and_clean_params(
+            [list_pso_params, list_ga_params], 'hgapso')
+            
+    # Number of the datasets' attributes
+    n_attrib = list_cluster_params['n_attrib']
+    particle_sizes = [n_attrib*c for c in list_cluster_params['n_clusters']]
+
+    all_params['particle_size'] = particle_sizes
+
+    df_results = pd.DataFrame(
+            columns=['c1', 'c2', 'fitness','max_iters', 'omega', 'pop_size',
+                     'run', 'prob_mut', 'n_clusters'])
+    return run_experiment('hgapso', all_params, func_name, n_runs,
+                          df_results, dataset_name, n_attrib)
 
 
 def run_logapso_experiments(list_pso_params, list_ga_params,
@@ -330,36 +386,49 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
     Returns
     -------
     df_results: Dataframe
+        Dataframe containing the results for the group of parameters.
     """
-    all_params = {}
-    all_params.update(list_pso_params.copy())
-    all_params.update(list_ga_params.copy())
-    all_params.update(list_logapso_params.copy())
+    all_params = merge_and_clean_params(
+            [list_pso_params, list_ga_params, list_logapso_params], 'logapso')
     
-    pso_ga_params = create_grid_params(all_params)
-    eval_func, l_bound, u_bound, task = functions.get_function(func_name)
-    func_params = {"eval_func":eval_func, "l_bound":l_bound,
-            "u_bound":u_bound, "task":task}
-
     df_results = pd.DataFrame(
-            columns=['c1', 'c2', 'fitness', 'max_iters', 'omega',
-            'pop_size', 'prob_run_ga', 'run', 'step_size', 'particle_size'])
+            columns=['c1', 'c2', 'fitness', 'max_iters', 'omega', 'pop_size', 
+            'run', 'prob_mut', 'prob_run_ga', 'step_size', 'particle_size'])
 
-    for p in pso_ga_params:
-        for run in range(n_runs):
-            print(f'-------- LOGAPSO - run {run+1} --------')
-            _, _, best_evals = logapso.run_logapso(
-                    alg_params=p, func_params=func_params,
-                    prob_run_ga=p['prob_run_ga'],
-                    step_size=p['step_size']
-                    )
-            n_iters = len(best_evals)
-            df_results = add_results_to_df(p, df_results, n_iters, best_evals,
-                                           run, 'logapso')
-    return df_results
+    return run_experiment('logapso', all_params, func_name, n_runs,
+                          df_results)
 
 
-def run_experiments(n_runs, params):
+def run_cluster_logapso_experiments(list_pso_params, list_ga_params,
+                                    list_logapso_params, list_cluster_params,
+                                    func_name, n_runs, dataset_name):
+    """
+    Execute experiments with LOGAPSO algorithm for clustering optimization
+    problems. Each experiment for each set of params executes 'n_run' times.
+
+    Parameters
+    ----------
+    list_pso_params: dict
+        Dictionary containing the PSO parameters.
+    list_ga_params: dict
+        Dictionary containing the GA parameters.
+    list_logapso: dict
+        Dictionary containing the LOGAPSO parameters.
+    list_cluster_params: dict
+        Dictionary containing clustering params.
+    func_name: string
+    n_runs: int
+    dataset_name: string
+
+    Returns
+    -------
+    df_results: Dataframe
+        Dataframe containing the results for the group of parameters.
+    """
+    return pd.DataFrame()
+
+
+def run_group_of_experiments(n_runs, params):
     """
     Run a group of experiments for each optimisation algorithm.
 
@@ -379,7 +448,6 @@ def run_experiments(n_runs, params):
             run_cluster_pso_experiments(params['pso'], 
                     params['clustering']['ionosphere'], func, n_runs,
                     'ionosphere')
-
             if alg == 'pso':
                 df_results = run_pso_experiments(params['pso'], func, n_runs)
             elif alg == 'hgapso':
@@ -394,4 +462,4 @@ def run_experiments(n_runs, params):
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
-    run_experiments(5, params)
+    run_group_of_experiments(5, params)
