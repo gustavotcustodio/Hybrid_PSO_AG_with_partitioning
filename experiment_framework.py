@@ -428,7 +428,7 @@ def run_cluster_logapso_experiments(list_pso_params, list_ga_params,
     return pd.DataFrame()
 
 
-def run_group_of_experiments(n_runs, params):
+def run_all_experiments(n_runs, params):
     """
     Run a group of experiments for each optimisation algorithm.
 
@@ -439,15 +439,15 @@ def run_group_of_experiments(n_runs, params):
     params: dict
         Dictionary containing the parameters for the experiments.
     """
-    # Number of times each group of experiments is run
-    algorithms = ['logapso']
+    algorithms = ['pso', 'hgapso', 'logapso']
     benchmark_funcs = params['function']
+
+    # Indices for clustering evalutation
+    indices_clust_eval = ['davies_bouldin', 'xie_beni']
+    datasets = params['clustering'].keys()
     
     for alg in algorithms:
         for func in benchmark_funcs:
-            run_cluster_pso_experiments(params['pso'], 
-                    params['clustering']['ionosphere'], func, n_runs,
-                    'ionosphere')
             if alg == 'pso':
                 df_results = run_pso_experiments(params['pso'], func, n_runs)
             elif alg == 'hgapso':
@@ -459,7 +459,23 @@ def run_group_of_experiments(n_runs, params):
                         func, n_runs)
             save_results(alg, func, df_results)
 
+        for cl in indices_clust_eval:
+            for dataset in datasets:
+                if alg == 'pso':
+                    df_results = run_cluster_pso_experiments(
+                            params['pso'], params['cluster'][dataset],
+                            cl, n_runs, dataset)
+                elif alg == 'hgapso':
+                    df_results = run_cluster_hgapso_experiments(
+                            params['pso'], params['ga'],
+                            params['cluster'][dataset], cl, n_runs, dataset)
+                elif alg == 'logapso':
+                    df_results = run_cluster_logapso_experiments(
+                            params['pso'], params['ga'], params['logapso'],
+                            params['cluster'][dataset], cl, n_runs, dataset)
+                save_results(alg, cl, df_results)
+
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
-    run_group_of_experiments(5, params)
+    run_all_experiments(5, params)
