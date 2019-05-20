@@ -7,7 +7,7 @@ import logapso
 import hgapso
 import functions
 import os
-import multiprocessing
+import multiprocessing as mp
 import time
 
 
@@ -251,15 +251,13 @@ def run_pso_experiments(list_params, func_name, n_runs):
         Name of benchmark function.
     n_runs: int
         Number of runs for same parameter.
-
-    Returns
-    -------
-    df_results: Dataframe
-        Dataframe containing the results for the group of parameters.
     """
     df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness', 'max_iters',
                               'omega', 'pop_size', 'run', 'particle_size'])
-    return run_experiment('pso', list_params, func_name, n_runs, df_results)
+    df_results = run_experiment('pso', list_params, func_name,
+                                n_runs, df_results)
+    print('ok')
+    save_results('pso', func_name, df_results)
 
 
 def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
@@ -279,11 +277,6 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
     n_runs: int
         Number of runs for same parameter.
     dataset_name: string
-
-    Returns
-    -------
-    df_results: Dataframe
-        Dataframe containing the results for the group of parameters.
     """
     n_attrib = list_cluster_params['n_attrib']
     particle_sizes = [n_attrib*c  for c in list_cluster_params['n_clusters']]
@@ -293,8 +286,9 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
     df_results = pd.DataFrame(columns=['c1', 'c2', 'fitness','max_iters',
                               'omega', 'pop_size', 'run', 'n_clusters'])
        
-    return run_experiment('pso', list_pso_params, func_name, n_runs, 
-                          df_results, dataset_name, n_attrib)
+    df_results = run_experiment('pso', list_pso_params, func_name, n_runs,
+                                df_results, dataset_name, n_attrib)
+    save_results('pso', func_name, df_results)
 
 
 def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
@@ -313,11 +307,6 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
         Name of function.
     n_runs: int
         Number of times the experiment is executed.
-
-    Returns
-    -------
-    df_results: Dataframe
-        Dataframe containing the results for the group of parameters.
     """
     all_params = merge_and_clean_params(
             [list_pso_params, list_ga_params], 'hgapso')
@@ -326,7 +315,9 @@ def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
             columns=['c1', 'c2', 'fitness', 'max_iters', 'omega',
                      'pop_size', 'run', 'prob_mut', 'particle_size'])
 
-    return run_experiment('hgapso', all_params, func_name, n_runs, df_results)
+    df_results = run_experiment('hgapso', all_params, func_name, 
+                                n_runs, df_results)
+    save_results('hgapso', func_name, df_results)
 
 
 def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
@@ -349,11 +340,6 @@ def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
     n_runs: int
         Number of times the experiment is executed.
     dataset_name: string
-
-    Returns
-    -------
-    df_results: Dataframe
-        Dataframe containing the results for the group of parameters.
     """
     # Merge parameters of pso and ga in a single dict
     all_params = merge_and_clean_params(
@@ -368,8 +354,9 @@ def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
     df_results = pd.DataFrame(
             columns=['c1', 'c2', 'fitness','max_iters', 'omega', 'pop_size',
                      'run', 'prob_mut', 'n_clusters'])
-    return run_experiment('hgapso', all_params, func_name, n_runs,
-                          df_results, dataset_name, n_attrib)
+    df_results = run_experiment('hgapso', all_params, func_name, n_runs,
+                                df_results, dataset_name, n_attrib)
+    save_results('hgapso', func_name, df_results)
 
 
 def run_logapso_experiments(list_pso_params, list_ga_params,
@@ -388,11 +375,6 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
         Dictionary containing the LOGAPSO parameters.
     func_name: string
     n_runs: int
-
-    Returns
-    -------
-    df_results: Dataframe
-        Dataframe containing the results for the group of parameters.
     """
     all_params = merge_and_clean_params(
             [list_pso_params, list_ga_params, list_logapso_params], 'logapso')
@@ -401,8 +383,9 @@ def run_logapso_experiments(list_pso_params, list_ga_params,
             columns=['c1', 'c2', 'fitness', 'max_iters', 'omega', 'pop_size', 
             'run', 'prob_mut', 'prob_run_ga', 'step_size', 'particle_size'])
 
-    return run_experiment('logapso', all_params, func_name, n_runs,
-                          df_results)
+    df_results = run_experiment('logapso', all_params, func_name, n_runs,
+                                df_results)
+    save_results('logapso', func_name, df_results)
 
 
 def run_cluster_logapso_experiments(list_pso_params, list_ga_params,
@@ -425,11 +408,6 @@ def run_cluster_logapso_experiments(list_pso_params, list_ga_params,
     func_name: string
     n_runs: int
     dataset_name: string
-
-    Returns
-    -------
-    df_results: Dataframe
-        Dataframe containing the results for the group of parameters.
     """
     # Merge parameters of pso and ga in a single dict
     all_params = merge_and_clean_params(
@@ -445,8 +423,83 @@ def run_cluster_logapso_experiments(list_pso_params, list_ga_params,
             columns=['c1', 'c2', 'fitness', 'max_iters', 'omega', 'pop_size', 
             'run', 'prob_mut', 'prob_run_ga', 'step_size', 'n_clusters'])
 
-    return run_experiment('logapso', all_params, func_name, n_runs,
-                          df_results, dataset_name, n_attrib)
+    df_results = run_experiment('logapso', all_params, func_name, n_runs,
+                            df_results, dataset_name, n_attrib)
+    save_results('logapso', func_name, df_results)
+
+
+def run_parallel_experiments(n_runs, params, n_cpus):
+    """
+    Break the experiments in different processes and run them
+    using all avalilable cores.
+
+    Parameters
+    ----------
+    n_runs: int
+        Number of executions of the same algorithm with the same set
+        of parameters.
+    params: dict
+        Dictionary containing the parameters for the experiments.
+    n_cpus: int
+        Number of avalilable cpus.
+    """
+    algorithms = ['logapso','hgapso', 'pso']
+    benchmark_funcs = params['function']
+
+    # Indices for clustering evalutation
+    indices_clust_eval = ['davies_bouldin', 'xie_beni']
+    datasets = params['clustering'].keys()
+    
+    # List containg the processes to run in parallel
+    processes = []
+
+    for alg in algorithms:
+
+        for cl in indices_clust_eval:
+            for dataset in datasets:
+                if alg == 'pso':
+                    processes.append(
+                        mp.Process(
+                            target=run_cluster_pso_experiments,
+                            args=(params['pso'], params['clustering'][dataset],
+                                  cl, n_runs, dataset,))
+                    )
+                elif alg == 'hgapso':
+                    processes.append(
+                        mp.Process(
+                            target=run_cluster_hgapso_experiments,
+                            args=(params['pso'], params['ga'],
+                                  params['clustering'][dataset], cl, n_runs,
+                                  dataset,))
+                    )
+                elif alg == 'logapso':
+                    processes.append(
+                        mp.Process(
+                            target=run_cluster_hgapso_experiments,
+                            args=(params['pso'], params['ga'], params['logapso'],
+                                  params['clustering'][dataset], cl, n_runs,
+                                  dataset,))
+                    )
+    
+        for func in benchmark_funcs:
+            if alg == 'pso':
+                processes.append(
+                    mp.Process(target=run_pso_experiments,
+                               args=(params['pso'], func, n_runs,))
+                )
+            elif alg == 'hgapso':
+                processes.append(
+                    mp.Process(target=run_hgapso_experiments,
+                               args=(params['pso'], params['ga'], 
+                                     func, n_runs,))
+                )
+            elif alg == 'logapso':
+                processes.append(
+                    mp.Process(target=run_logapso_experiments,
+                               args=(params['pso'], params['ga'],
+                                     params['logapso'], func, n_runs,))
+                )
+        #run_processes(processes, n_cpus)
 
 
 def run_all_experiments(n_runs, params):
@@ -469,35 +522,34 @@ def run_all_experiments(n_runs, params):
     datasets = params['clustering'].keys()
     
     for alg in algorithms:
+
         for cl in indices_clust_eval:
             for dataset in datasets:
                 if alg == 'pso':
-                    df_results = run_cluster_pso_experiments(
+                    run_cluster_pso_experiments(
                             params['pso'], params['clustering'][dataset],
                             cl, n_runs, dataset)
                 elif alg == 'hgapso':
-                    df_results = run_cluster_hgapso_experiments(
+                    run_cluster_hgapso_experiments(
                             params['pso'], params['ga'],
                             params['clustering'][dataset], cl, n_runs, dataset)
                 elif alg == 'logapso':
-                    df_results = run_cluster_logapso_experiments(
+                    run_cluster_logapso_experiments(
                             params['pso'], params['ga'], params['logapso'],
                             params['clustering'][dataset], cl, n_runs, dataset)
-                save_results(alg, cl, df_results)
-
+    
         for func in benchmark_funcs:
             if alg == 'pso':
-                df_results = run_pso_experiments(params['pso'], func, n_runs)
+                run_pso_experiments(params['pso'], func, n_runs)
             elif alg == 'hgapso':
-                df_results = run_hgapso_experiments(
-                        params['pso'], params['ga'], func, n_runs)
+                run_hgapso_experiments(params['pso'], params['ga'], 
+                                       func, n_runs)
             elif alg == 'logapso':
-                df_results = run_logapso_experiments(
-                        params['pso'], params['ga'], params['logapso'],
-                        func, n_runs)
-            save_results(alg, func, df_results)
+                run_logapso_experiments(params['pso'], params['ga'],
+                                        params['logapso'], func, n_runs)
 
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
-    run_all_experiments(5, params)
+    #run_all_experiments(5, params)
+    run_parallel_experiments(5, params, mp.cpu_count())
