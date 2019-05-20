@@ -41,11 +41,8 @@ def generate_particles(pop_size, particle_size, l_bound, u_bound):
         Matrix containing particles' velocities.
     """
     # Generate multiple arrays to represent PSO particles.
-    particles = np.array(
-        [generate_single_array (particle_size, l_bound, u_bound)
-        for _ in range(pop_size)]
-    )
-    return particles
+    return np.random.uniform(l_bound, u_bound, size=(pop_size, particle_size))
+
 
 def generate_velocities(pop_size, particle_size, l_bound, u_bound):
     """Generate an array of arrays containing the initial velocities
@@ -72,10 +69,9 @@ def generate_velocities(pop_size, particle_size, l_bound, u_bound):
     u_bound_vel = abs(u_bound - l_bound)
     l_bound_vel = -u_bound_vel
 
-    velocities = np.array(
-        [generate_single_array (particle_size, l_bound_vel, u_bound_vel)
-        for _ in range(pop_size)])
-    return velocities
+    return np.random.uniform(l_bound_vel, u_bound_vel, 
+                             size=(pop_size, particle_size))
+
 
 def evaluate_particles(eval_func, particles):
     """Evaluate particles using an evaluation function.
@@ -85,8 +81,8 @@ def evaluate_particles(eval_func, particles):
     evals_particles: 1d array
         Evaluation of PSO particles.
     """
-    evals = [eval_func(p) for p in particles]
-    return np.array (evals)
+    return np.apply_along_axis(eval_func, 1, particles)
+
 
 def get_best_particle(particles, evals_parts, task = 'min'):
     """Get the particle with best evaluation.
@@ -124,12 +120,9 @@ def update_velocities(particles, best_parts, global_best, velocities, consts):
     r1 = np.random.uniform(0, 1, (pop_size, particle_size))
     r2 = np.random.uniform(0, 1, (pop_size, particle_size))
 
-    # Tranform the global best solution in a 2d array,
-    # repeating the array containing the global solution in each row.
-    mat_global_best = np.tile(global_best, (pop_size, 1))
-    return (consts[0] * velocities
-           + (r1 * consts[1] * (best_parts-particles))
-           + (r2 * consts[2] * (mat_global_best-particles)))
+    return (consts[0]*velocities
+           + (r1*consts[1]*(best_parts-particles))
+           + (r2*consts[2]*(global_best[np.newaxis,:]-particles)))
 
 
 def update_positions(positions, velocities):
@@ -171,7 +164,10 @@ def update_best_solutions(positions, best_parts, evals_parts, evals_best,
 
     Returns
     -------
-    ******
+    best_parts: 2d array
+        Best solutions found by each particle.
+    evals_best: 1d array
+        Evaluation of best solutions.
     """
     if task == 'min':
         # Indices where the particles have better eval than the current best.
@@ -255,7 +251,7 @@ def run_pso(eval_func, consts, max_iters=100, pop_size=100, particle_size=10,
     """
     if initial_particles is None:
         particles = generate_particles(pop_size, particle_size, 
-                                        l_bound, u_bound)
+                                       l_bound, u_bound)
     else:
         particle_size = initial_particles.shape[1]
         pop_size = initial_particles.shape[0]
@@ -270,7 +266,7 @@ def run_pso(eval_func, consts, max_iters=100, pop_size=100, particle_size=10,
     velocities = generate_velocities(pop_size, particle_size, l_bound, u_bound)
 
     global_solutions, global_evals = [], []
-    for _ in range (max_iters):
+    for _ in range(max_iters):
         velocities = update_velocities(particles, best_parts, global_best, 
                                        velocities, consts)
 
@@ -278,9 +274,9 @@ def run_pso(eval_func, consts, max_iters=100, pop_size=100, particle_size=10,
         evals_parts = evaluate_particles(eval_func, particles)
 
         update_best_solutions(
-                    particles, best_parts, evals_parts, evals_best, task)
+                particles, best_parts, evals_parts, evals_best, task)
         global_best, eval_global = update_global_best(
-                    particles, global_best, evals_parts, eval_global, task)
+                particles, global_best, evals_parts, eval_global, task)
         
         global_solutions.append(global_best)
         global_evals.append(eval_global)

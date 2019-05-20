@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 
-def normalize_fitness (fitness_vals, task='max'):
+def normalize_fitness(fitness_vals, task='max'):
     """
     Normalize fitness values between 1.0 and 2.0.
 
@@ -16,7 +16,7 @@ def normalize_fitness (fitness_vals, task='max'):
     return (1.0/fitness_norm) if task=='min' else fitness_norm
 
 
-def selection (population, fitness_vals, n_to_select, task):
+def selection(population, fitness_vals, n_to_select, task):
     """
     Select the top n_to_select chromosomes according to 
     their fitness values.
@@ -26,7 +26,7 @@ def selection (population, fitness_vals, n_to_select, task):
     return population [top_indices], top_indices
 
 
-def roulette_selection (population, n_to_select, fitness_vals, task):
+def roulette_selection(population, n_to_select, fitness_vals, task):
     """
     Roulette selection of genetic algorithm.
 
@@ -168,7 +168,7 @@ def arith_mutation(population, prob_mut, l_bound=-1, u_bound=1):
     """
     n_chromosomes = population.shape[0]
     n_dims = population.shape[1]
-    mut_population = np.copy (population)
+    mut_population = np.copy(population)
 
     # create 2d array with random values
     random_2d_array = np.random.uniform (0, 1, size=(n_chromosomes, n_dims))
@@ -179,7 +179,7 @@ def arith_mutation(population, prob_mut, l_bound=-1, u_bound=1):
 
     changed_values = [random.uniform (l_bound, u_bound
                         ) for _ in range(n_mutations)]
-    mut_population [indices_change] = changed_values
+    mut_population[indices_change] = changed_values
     return mut_population
 
 
@@ -233,8 +233,8 @@ def mutation(population, prob_mut, possible_values):
     return final_pop
     
 
-def run_single_ga_iter (population, prob_cross, prob_mut, fitness_func, 
-                        c=0.5, l_bound=-1, u_bound=1, task='min'):
+def run_single_ga_iter(population, prob_cross, prob_mut, fitness_func,
+                       c=0.5, l_bound=-1, u_bound=1, task='min'):
     """."""
     ga_pop = np.copy(population)
     n_to_select = ga_pop.shape[0]

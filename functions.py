@@ -2,65 +2,42 @@ import numpy as np
 import math
 import random
 import data_loader
+from scipy.spatial import distance_matrix
 from scipy.spatial import distance
+from sklearn.metrics import davies_bouldin_score
 
-def get_distances(inputs, clusters, labels):
-    # Distances between each point and all clusters
-    distances = np.array([[distance.euclidean(inp, cl) for cl in clusters]
-                        for inp in inputs])
-    return distances
+
+def davies_bouldin(inputs, labels):
+    m = inputs.shape[1] # number of attributes
+    def wrapper(particle):
+        d = int(particle.shape[0]/m) # number of clusters
+        clusters = np.reshape(particle, (d, m))
+        distances = distance_matrix(inputs, clusters)
+        labels = np.argmin(distances, axis=1)
+        if len(np.unique(labels)) <= 1:
+            return 9999999.0
+        else:
+            with np.errstate(divide='ignore', invalid='ignore'):
+                return davies_bouldin_score(inputs, labels)
+    return wrapper
 
 
 def xie_beni(inputs, labels):
     n = inputs.shape[0] # number of inputs
     m = inputs.shape[1] # number of attributes
     def wrapper(particle):
-        d = int(particle.shape[0]/m) # number of clusters
-        clusters = np.reshape(particle,(d, m)) #fit each cluster in a row
-        distances = get_distances(inputs, clusters, labels)
-        distances[np.where(distances==0)] = 10**(-100) # avoids division by 0
+        d = int(particle.shape[0]/m) # number of clusters 
+        clusters = np.reshape(particle, (d, m)) #fit each cluster in a row
+        distances = distance_matrix(inputs, clusters)
+        # 10**(-100) avoids division by 0
+        distances = np.where(distances!=0, distances, 10**(-100))
         # Shape of distance matrix:(n x d)
-        u = np.array([[distances[k,i]**2 / sum(distances[k,:]**2)
-                for i in range(d)] for k in range(n)])
+        u = distances**2 / np.sum(distances**2, axis=1)[:, np.newaxis]
         u = 1.0 / u
         u =(u.T / np.sum(u, axis=1)).T
-        num = sum([u[k,i]**2 * sum((clusters[i]-inputs[k])**2)
-                for k in range(n) for i in range(d)])        
-        den = n * min([sum((clusters[i]-clusters[j])**2)
-                for j in range(d) for i in range(d) if i!=j])
-        return num/den
-    return wrapper
-
-def davies_bouldin(inputs, labels):
-    n = inputs.shape[0] # number of inputs
-    m = inputs.shape[1] # number of attributes
-    def wrapper(particle):
-        d = int(particle.shape[0]/m) # number of clusters
-        clusters = np.reshape(particle,(d, m))
-        distances = get_distances(inputs, clusters, labels)
-
-        S = np.zeros(d)
-        total = 0.0
-        guessed_clusters = np.zeros(n)
-        for j in range(n):     
-            closest = np.argmin(distances[j]) # index of closest cluster
-            guessed_clusters[j] = closest
-
-        for i in range(d):
-            dist_c = distances[:,i]
-            # Distances related to the cluster i and its objects
-            dist_cluster = dist_c[np.where(guessed_clusters==i)]
-            if dist_cluster.shape[0]==0:
-                S[i] = 0.0
-            else:
-                S[i] = sum(dist_cluster) / dist_cluster.shape[0] # average
-
-        for i in range(d):
-            N = np.array([S[i] + S[k] for k in range(d) if k!=i])
-            D = [np.linalg.norm(clusters[i]-clusters[k]) 
-                    for k in range(d) if k!=i]
-            total += max(N/D)
-        return total/d
+        num = np.sum(u**2 * distances**2)     
+        den = n * min(distance.pdist(clusters))**2
+        return num / den
     return wrapper
 
 

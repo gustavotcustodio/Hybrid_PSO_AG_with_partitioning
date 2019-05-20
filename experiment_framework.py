@@ -7,6 +7,8 @@ import logapso
 import hgapso
 import functions
 import os
+import multiprocessing
+import time
 
 
 def read_json(file_name):
@@ -111,6 +113,8 @@ def merge_and_clean_params(lists_of_params_dicts, algorithm):
 def run_experiment(algorithm, parameters, func_name, n_runs,
                    df_results, dataset_name=None, n_attrib=1):
     """
+    Run single experiment.
+
     Parameters
     ----------
     algorithm: string
@@ -147,10 +151,11 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
     n_params = len(grid_params)
     index_params = 1
 
-    for p in grid_params:
+    for p in grid_params:        
         print(f'======== Parameters {index_params} of {n_params} ========')
         for run in range(n_runs):
             print(f'-------- {algorithm} - run {run+1} --------')
+            inicio = time.time()
             if algorithm == 'pso':
                 _, _, best_evals = pso.run_pso(
                         eval_func=eval_func, consts=p['consts'],
@@ -165,6 +170,7 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
                                     alg_params=p, func_params=func_params, 
                                     prob_run_ga=p['prob_run_ga'],
                                     step_size=p['step_size'])
+            print(time.time() - inicio)
             n_iters = len(best_evals)
             # This is a clustering optimization problem
             if dataset_name is not None: 
@@ -450,11 +456,12 @@ def run_all_experiments(n_runs, params):
     Parameters
     ----------
     n_runs: int
-        Number of executions of the same algorithm with the same set of parameters.
+        Number of executions of the same algorithm with the same set 
+        of parameters.
     params: dict
         Dictionary containing the parameters for the experiments.
     """
-    algorithms = ['pso', 'hgapso', 'logapso']
+    algorithms = ['logapso','hgapso', 'pso']
     benchmark_funcs = params['function']
 
     # Indices for clustering evalutation
@@ -462,6 +469,22 @@ def run_all_experiments(n_runs, params):
     datasets = params['clustering'].keys()
     
     for alg in algorithms:
+        for cl in indices_clust_eval:
+            for dataset in datasets:
+                if alg == 'pso':
+                    df_results = run_cluster_pso_experiments(
+                            params['pso'], params['clustering'][dataset],
+                            cl, n_runs, dataset)
+                elif alg == 'hgapso':
+                    df_results = run_cluster_hgapso_experiments(
+                            params['pso'], params['ga'],
+                            params['clustering'][dataset], cl, n_runs, dataset)
+                elif alg == 'logapso':
+                    df_results = run_cluster_logapso_experiments(
+                            params['pso'], params['ga'], params['logapso'],
+                            params['clustering'][dataset], cl, n_runs, dataset)
+                save_results(alg, cl, df_results)
+
         for func in benchmark_funcs:
             if alg == 'pso':
                 df_results = run_pso_experiments(params['pso'], func, n_runs)
@@ -473,22 +496,6 @@ def run_all_experiments(n_runs, params):
                         params['pso'], params['ga'], params['logapso'],
                         func, n_runs)
             save_results(alg, func, df_results)
-
-        for cl in indices_clust_eval:
-            for dataset in datasets:
-                if alg == 'pso':
-                    df_results = run_cluster_pso_experiments(
-                            params['pso'], params['cluster'][dataset],
-                            cl, n_runs, dataset)
-                elif alg == 'hgapso':
-                    df_results = run_cluster_hgapso_experiments(
-                            params['pso'], params['ga'],
-                            params['cluster'][dataset], cl, n_runs, dataset)
-                elif alg == 'logapso':
-                    df_results = run_cluster_logapso_experiments(
-                            params['pso'], params['ga'], params['logapso'],
-                            params['cluster'][dataset], cl, n_runs, dataset)
-                save_results(alg, cl, df_results)
 
 
 if __name__ == '__main__':

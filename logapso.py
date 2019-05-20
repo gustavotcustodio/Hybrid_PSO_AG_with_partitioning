@@ -33,7 +33,6 @@ def ga_random_walk(alg_params, func_params, best_parts, evals_best,
                                        prob_mut=alg_params['prob_mut'],
                                        possible_values=[-1, 0, 1],
                                        task=func_params['task'])
-                                       
             test_new_best = best_parts[i] + step_size*step_direction
             eval_new = eval_func(test_new_best)
             # Check if the fitness of the new solution is better than 
