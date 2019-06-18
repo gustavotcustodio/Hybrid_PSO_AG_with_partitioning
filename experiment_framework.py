@@ -29,7 +29,7 @@ def read_json(file_name):
     return params
 
 
-def save_results(algorithm, benchmark_func, df_results):
+def save_results(algorithm, benchmark_func, df_results, dataset=None):
     """
     Save the results of experiments to a csv file.
     
@@ -41,10 +41,13 @@ def save_results(algorithm, benchmark_func, df_results):
         Name of benchmark function.
     df_results: Dataframe
         Dataframe containing the results of experiments.
+    dataset: string, None
     """
     results_dir = os.path.join(os.path.dirname(__file__), 'exp_results')
-    file_name = f"results_{algorithm}_{benchmark_func}.csv"
-
+    if dataset is None:
+        file_name = f"results_{algorithm}_{benchmark_func}.csv"
+    else:
+        file_name = f"results_{algorithm}_{benchmark_func}_{dataset}.csv"
     df_results.to_csv(os.path.join(results_dir, file_name), index=False)
     print(f'{file_name} succesfully saved.')
 
@@ -108,6 +111,10 @@ def merge_and_clean_params(lists_of_params_dicts, algorithm):
         del all_params['n_gens']
         del all_params['pop_ga']
     return all_params
+
+
+def start_from():
+    return 0
 
 
 def run_experiment(algorithm, parameters, func_name, n_runs,
@@ -287,7 +294,7 @@ def run_cluster_pso_experiments(list_pso_params, list_cluster_params,
        
     df_results = run_experiment('pso', list_pso_params, func_name, n_runs,
                                 df_results, dataset_name, n_attrib)
-    save_results('pso', func_name, df_results)
+    save_results('pso', func_name, df_results, dataset_name)
 
 
 def run_hgapso_experiments(list_pso_params, list_ga_params, func_name,
@@ -355,7 +362,7 @@ def run_cluster_hgapso_experiments(list_pso_params, list_ga_params,
                      'run', 'prob_mut', 'n_clusters'])
     df_results = run_experiment('hgapso', all_params, func_name, n_runs,
                                 df_results, dataset_name, n_attrib)
-    save_results('hgapso', func_name, df_results)
+    save_results('hgapso', func_name, df_results, dataset_name)
 
 
 def run_logapso_experiments(list_pso_params, list_ga_params,
@@ -424,7 +431,7 @@ def run_cluster_logapso_experiments(list_pso_params, list_ga_params,
 
     df_results = run_experiment('logapso', all_params, func_name, n_runs,
                             df_results, dataset_name, n_attrib)
-    save_results('logapso', func_name, df_results)
+    save_results('logapso', func_name, df_results, dataset_name)
 
 
 def run_processes(processes, n_cpus):
@@ -468,7 +475,7 @@ def run_parallel_experiments(n_runs, params, n_cpus):
     n_cpus: int
         Number of avalilable cpus.
     """
-    algorithms = ['pso','hgapso', 'logapso']
+    algorithms = ['pso']
     benchmark_funcs = params['function']
 
     # Indices for clustering evalutation
@@ -486,9 +493,10 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                         mp.Process(
                             target=run_cluster_pso_experiments,
                             args=(params['pso'], params['clustering'][dataset],
-                                 cl, n_runs, dataset,))
+                                  cl, n_runs, dataset,))
                     )
-                elif alg == 'hgapso':
+
+                if alg == 'hgapso':
                     processes.append(
                         mp.Process(
                             target=run_cluster_hgapso_experiments,
@@ -496,33 +504,12 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                                   params['clustering'][dataset], cl, n_runs,
                                   dataset,))
                     )
-                elif alg == 'logapso':
-                    processes.append(
-                        mp.Process(
-                            target=run_cluster_logapso_experiments,
-                            args=(params['pso'], params['ga'],
-                                  params['logapso'],
-                                  params['clustering'][dataset], cl, n_runs,
-                                  dataset,))
-                    )
-
         for func in benchmark_funcs:
-            if alg == 'pso':
-                processes.append(
-                    mp.Process(target=run_pso_experiments,
-                               args=(params['pso'], func, n_runs,))
-                )
-            elif alg == 'hgapso':
+            if alg == 'hgapso':
                 processes.append(
                     mp.Process(target=run_hgapso_experiments,
                                args=(params['pso'], params['ga'],
                                      func, n_runs,))
-                )
-            elif alg == 'logapso':
-                processes.append(
-                    mp.Process(target=run_logapso_experiments,
-                               args=(params['pso'], params['ga'],
-                                     params['logapso'], func, n_runs,))
                 )
         run_processes(processes, n_cpus)
 
@@ -577,4 +564,4 @@ def run_all_experiments(n_runs, params):
 if __name__ == '__main__':
     params = read_json('parameters.json')
     #run_all_experiments(5, params)
-    run_parallel_experiments(5, params, mp.cpu_count())
+    run_parallel_experiments(5, params, mp.cpu_count()-1)
