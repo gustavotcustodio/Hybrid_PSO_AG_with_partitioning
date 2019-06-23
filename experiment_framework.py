@@ -509,9 +509,10 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                         mp.Process(
                             target=run_cluster_pso_experiments,
                             args=(params['pso'], params['clustering'][dataset],
-                                 cl, n_runs, dataset,))
+                                  cl, n_runs, dataset,))
                     )
-                elif alg == 'hgapso':
+
+                if alg == 'hgapso':
                     processes.append(
                         mp.Process(
                             target=run_cluster_hgapso_experiments,
@@ -519,33 +520,12 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                                   params['clustering'][dataset], cl, n_runs,
                                   dataset,))
                     )
-                elif alg == 'logapso':
-                    processes.append(
-                        mp.Process(
-                            target=run_cluster_logapso_experiments,
-                            args=(params['pso'], params['ga'],
-                                  params['logapso'],
-                                  params['clustering'][dataset], cl, n_runs,
-                                  dataset,))
-                    )
-
         for func in benchmark_funcs:
-            if alg == 'pso':
-                processes.append(
-                    mp.Process(target=run_pso_experiments,
-                               args=(params['pso'], func, n_runs,))
-                )
-            elif alg == 'hgapso':
+            if alg == 'hgapso':
                 processes.append(
                     mp.Process(target=run_hgapso_experiments,
                                args=(params['pso'], params['ga'],
                                      func, n_runs,))
-                )
-            elif alg == 'logapso':
-                processes.append(
-                    mp.Process(target=run_logapso_experiments,
-                               args=(params['pso'], params['ga'],
-                                     params['logapso'], func, n_runs,))
                 )
         run_processes(processes, n_cpus)
 
