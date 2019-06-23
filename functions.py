@@ -1,10 +1,27 @@
 import numpy as np
 import math
 import random
+import time
 import data_loader
+from sklearn.metrics import silhouette_score
 from scipy.spatial import distance_matrix
 from scipy.spatial import distance
 from sklearn.metrics import davies_bouldin_score
+from sklearn.metrics import calinski_harabaz_score
+
+
+def silhouette(inputs, labels):
+    m = inputs.shape[1] # number of attributes
+    def wrapper(particle):
+        d = int(particle.shape[0]/m) # number of clusters
+        clusters = np.reshape(particle, (d, m))
+        distances = distance_matrix(inputs, clusters)
+        labels = np.argmin(distances, axis=1)
+        try:
+            return 1.0 - silhouette_score(inputs, labels)
+        except:
+            return 1.0
+    return wrapper
 
 
 def davies_bouldin(inputs, labels):
@@ -19,6 +36,35 @@ def davies_bouldin(inputs, labels):
         else:
             with np.errstate(divide='ignore', invalid='ignore'):
                 return davies_bouldin_score(inputs, labels)
+    return wrapper
+
+
+def vrc(inputs, labels):
+    m = inputs.shape[1] # number of attributes
+    def wrapper(particle):
+        d = int(particle.shape[0]/m) # number of clusters
+        clusters = np.reshape(particle, (d, m))
+        distances = distance_matrix(inputs, clusters)
+        labels = np.argmin(distances, axis=1)
+        return calinski_harabaz_score(inputs, labels)
+    return wrapper
+
+
+def fuku_sugeno(inputs, labels):
+    m = inputs.shape[1] # number of attributes
+    def wrapper(particle):
+        d = int(particle.shape[0]/m) # number of clusters
+        clusters = np.reshape(particle, (d, m))
+        distances = distance_matrix(inputs, clusters)
+        distances = np.where(distances!=0, distances, 10**(-100))
+        # Shape of distance matrix:(n x d)
+        u = distances**2 / np.sum(distances**2, axis=1)[:, np.newaxis]
+        u = 1.0 / u
+        u =(u.T / np.sum(u, axis=1)).T
+
+        dists_mean_cluster = distance_matrix(
+                np.mean(clusters, axis=0)[np.newaxis,:], clusters)
+        return np.sum(u**2 * (distances**2-dists_mean_cluster**2))
     return wrapper
 
 
@@ -191,18 +237,30 @@ def get_cluster_index(function_name, dataset_name):
     X, y = data_loader.load_dataset(dataset_name)
     if function_name == 'davies_bouldin':
         return davies_bouldin(X, y), 'min'
-    else:
+    elif function_name == 'xie_beni':
         return xie_beni(X, y), 'min'
+    elif function_name == 'silhouette':
+        return silhouette(X, y), 'min'
+    elif function_name == 'vrc':
+        return vrc(X, y), 'min'
+    elif function_name == 'fuku_sugeno':
+        return fuku_sugeno(X, y), 'min'
 
     
 if __name__ == '__main__':
-    X, y = data_loader.load_dataset('iris.data')
+    X, y = data_loader.load_dataset('iris')
     X = data_loader.norm_plus_minus_1(X)
 
     DB = davies_bouldin(X, y)
     XB = xie_beni(X, y)
+    S = silhouette(X, y)
+    VRC = vrc(X,y)
+    FS = fuku_sugeno(X,y)
 
     particle = np.random.uniform(-1.0, 1.0,(int(2*X.shape[1])))
 
-    print(DB(particle))
-    print(XB(particle))
+    #print(DB(particle))
+    #print(XB(particle))
+    #print(S(particle))
+    XB(particle)
+    FS(particle)

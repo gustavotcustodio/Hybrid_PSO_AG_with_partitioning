@@ -169,7 +169,7 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
     n_params = len(grid_params)
     index_params = 1
 
-    grid_params, index_params = get_checkpoint(grid_params, dataset_name)
+    #grid_params, index_params = get_checkpoint(grid_params, dataset_name)
 
     for p in grid_params:        
         print(f'======== Parameters {index_params} of {n_params} ========')
@@ -491,11 +491,11 @@ def run_parallel_experiments(n_runs, params, n_cpus):
     n_cpus: int
         Number of avalilable cpus.
     """
-    algorithms = ['logapso']
+    algorithms = ['pso']
     benchmark_funcs = params['function']
 
     # Indices for clustering evalutation
-    indices_clust_eval = ['xie_beni']
+    indices_clust_eval = ['fuku_sugeno']
     datasets = params['clustering'].keys()
     
     # List containg the processes to run in parallel
@@ -562,11 +562,11 @@ def run_all_experiments(n_runs, params):
     params: dict
         Dictionary containing the parameters for the experiments.
     """
-    algorithms = ['logapso','hgapso', 'pso']
+    algorithms = ['pso','hgapso', 'logapso']
     benchmark_funcs = params['function']
 
     # Indices for clustering evalutation
-    indices_clust_eval = ['davies_bouldin', 'xie_beni']
+    indices_clust_eval = ['fuku_sugeno']
     datasets = params['clustering'].keys()
     
     for alg in algorithms:
@@ -599,5 +599,5 @@ def run_all_experiments(n_runs, params):
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
-    #run_all_experiments(5, params)
-    run_parallel_experiments(5, params, mp.cpu_count()-4)
+    run_all_experiments(5, params)
+    #run_parallel_experiments(5, params, mp.cpu_count()-3)

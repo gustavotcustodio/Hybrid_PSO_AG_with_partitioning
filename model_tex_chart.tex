@@ -1,0 +1,40 @@
+\documentclass{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.9,every x tick label/.append style={font=\Large},every y tick label/.append style={font=\Large},legend style={cells={anchor=west}}}
+
+\begin{document}
+    \begin{tikzpicture}
+        \begin{axis}
+            [   no markers,
+                %title={\Large Diabetes Dataset},
+                xlabel={\Large Iterations},
+                ylabel={\Large Fitness (Davies-Bouldin - Ionosphere)}
+                % xmin=-50, xmax=500,
+                ymin=0, ymax=2, %variaveis
+                legend pos=outer north east,% north west
+                ymajorgrids=true,
+                xmajorgrids=true,
+                xminorgrids=true,
+                grid style=dashed,
+                minor tick num=1,
+                legend style={font=\Large, 
+                legend columns=2,
+                at={(0.5,-0.33)},
+                anchor=north}
+            ]
+           
+            \addplot+[solid, thick, brown] table [ x expr = \lineno,y = B,col sep=comma] {dat_files/{}};
+            \addlegendentry{PSO} %variavel
+        
+            \addplot+[solid, thick, blue] table [ x expr = \lineno,y = B,col sep=comma] {dat_files/{}};
+            \addlegendentry{HGAPSO} %variavel
+         
+            \addplot+[solid, thick, red] table [ x expr = \lineno,y = B,col sep=comma] {dat_files/{}};
+            \addlegendentry{LOGAPSO} %variavel
+        \end{axis}
+    \end{tikzpicture}
+
+\end{document}
