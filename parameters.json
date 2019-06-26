@@ -47,15 +47,20 @@
             "n_clusters":[2, 6, 10],
             "n_attrib": 33
         },
-        "wine":
+        "iris":
         {
             "n_clusters":[3, 9, 15],
-            "n_attrib": 13
+            "n_attrib": 4
         },
         "wdbc":
         {
             "n_clusters":[2, 6, 10],
             "n_attrib": 30
-        }
+        },
+        "wine":
+        {
+            "n_clusters":[3, 9, 15],
+            "n_attrib": 13
+        }  
     }
 }
