@@ -29,7 +29,7 @@ def read_json(file_name):
     return params
 
 
-def save_results(algorithm, benchmark_func, df_results, dataset=None):
+def save_results(algorithm, benchmark_func, df_results, dataset_name=None):
     """
     Save the results of experiments to a csv file.
     
@@ -41,13 +41,15 @@ def save_results(algorithm, benchmark_func, df_results, dataset=None):
         Name of benchmark function.
     df_results: Dataframe
         Dataframe containing the results of experiments.
-    dataset: string, None
+    dataset_name: string, None
+        Name of dataset used for clustering optimization problem.
+        If not a clustering optim. problem, value is None.
     """
     results_dir = os.path.join(os.path.dirname(__file__), 'exp_results')
-    if dataset is None:
+    if dataset_name is None:
         file_name = f"results_{algorithm}_{benchmark_func}.csv"
     else:
-        file_name = f"results_{algorithm}_{benchmark_func}_{dataset}.csv"
+        file_name = f"results_{algorithm}_{benchmark_func}_{dataset_name}.csv"
     df_results.to_csv(os.path.join(results_dir, file_name), index=False)
     print(f'{file_name} succesfully saved.')
 
@@ -113,6 +115,19 @@ def merge_and_clean_params(lists_of_params_dicts, algorithm):
     return all_params
 
 
+def get_checkpoint(params, dataset):
+    if dataset == 'diabetes':
+        return params[272:], 272
+    elif dataset == 'ionosphere':
+        return params[368:], 368
+    elif dataset == 'iris':
+        return params[378:], 378
+    elif dataset == 'wdbc':
+        return params[238:], 238
+    else: # wine
+        return params[331:], 331
+
+
 def run_experiment(algorithm, parameters, func_name, n_runs,
                    df_results, dataset_name=None, n_attrib=1):
     """
@@ -128,7 +143,7 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
     n_runs: int
     df_results: DataFrame
         Dataframe for saving the experiments results.
-    dataset_name: string
+    dataset_name: string, None
         Takes the value 'None' if it's not a clustering optimisation problem.
     n_attrib: int
         Number of attributes for the dataset (Default value = 1).
@@ -153,6 +168,8 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
     
     n_params = len(grid_params)
     index_params = 1
+
+    #grid_params, index_params = get_checkpoint(grid_params, dataset_name)
 
     for p in grid_params:        
         print(f'======== Parameters {index_params} of {n_params} ========')
@@ -183,10 +200,13 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
                 df_results = add_results_to_df(
                         p, df_results, n_iters, best_evals, run, algorithm,
                         n_clusters)
-
             else: # This is problem of benchmark function optimization
                 df_results = add_results_to_df(p, df_results, n_iters, 
                                                best_evals, run, algorithm)
+        if dataset_name is not None:
+            save_results(algorithm, func_name, df_results, dataset_name)
+        else:
+            save_results(algorithm, func_name, df_results)
         index_params += 1
     return df_results
 
@@ -472,10 +492,10 @@ def run_parallel_experiments(n_runs, params, n_cpus):
         Number of avalilable cpus.
     """
     algorithms = ['pso']
-    benchmark_funcs = params['function']
+    benchmark_funcs = []# params['function']
 
     # Indices for clustering evalutation
-    indices_clust_eval = ['davies_bouldin', 'xie_beni']
+    indices_clust_eval = ['fuku_sugeno']
     datasets = params['clustering'].keys()
     
     # List containg the processes to run in parallel
@@ -489,7 +509,7 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                         mp.Process(
                             target=run_cluster_pso_experiments,
                             args=(params['pso'], params['clustering'][dataset],
-                                 cl, n_runs, dataset,))
+                                  cl, n_runs, dataset,))
                     )
         for func in benchmark_funcs:
             if alg == 'pso':
@@ -497,7 +517,22 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                     mp.Process(target=run_pso_experiments,
                                args=(params['pso'], func, n_runs,))
                 )
-        
+
+                if alg == 'hgapso':
+                    processes.append(
+                        mp.Process(
+                            target=run_cluster_hgapso_experiments,
+                            args=(params['pso'], params['ga'],
+                                  params['clustering'][dataset], cl, n_runs,
+                                  dataset,))
+                    )
+        for func in benchmark_funcs:
+            if alg == 'hgapso':
+                processes.append(
+                    mp.Process(target=run_hgapso_experiments,
+                               args=(params['pso'], params['ga'],
+                                     func, n_runs,))
+                )
         run_processes(processes, n_cpus)
 
 
@@ -517,7 +552,7 @@ def run_all_experiments(n_runs, params):
     benchmark_funcs = params['function']
 
     # Indices for clustering evalutation
-    indices_clust_eval = ['davies_bouldin', 'xie_beni']
+    indices_clust_eval = ['fuku_sugeno']
     datasets = params['clustering'].keys()
     
     for alg in algorithms:
@@ -536,15 +571,15 @@ def run_all_experiments(n_runs, params):
                             params['pso'], params['ga'], params['logapso'],
                             params['clustering'][dataset], cl, n_runs, dataset)
 
-        for func in benchmark_funcs:
-            if alg == 'pso':
-                run_pso_experiments(params['pso'], func, n_runs)
-            elif alg == 'hgapso':
-                run_hgapso_experiments(params['pso'], params['ga'], 
-                                       func, n_runs)
-            elif alg == 'logapso':
-                run_logapso_experiments(params['pso'], params['ga'],
-                                        params['logapso'], func, n_runs)
+        #for func in benchmark_funcs:
+        #    if alg == 'pso':
+        #        run_pso_experiments(params['pso'], func, n_runs)
+        #    elif alg == 'hgapso':
+        #        run_hgapso_experiments(params['pso'], params['ga'], 
+        #                               func, n_runs)
+        #    elif alg == 'logapso':
+        #        run_logapso_experiments(params['pso'], params['ga'],
+        #                                params['logapso'], func, n_runs)
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
