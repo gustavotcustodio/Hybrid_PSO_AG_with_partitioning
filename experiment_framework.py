@@ -170,7 +170,10 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
     index_params = 1
 
     #grid_params, index_params = get_checkpoint(grid_params, dataset_name)
+<<<<<<< HEAD
 
+=======
+>>>>>>> a350f7c932459ed7d91aa6be0a85865692766b1a
     for p in grid_params:        
         print(f'======== Parameters {index_params} of {n_params} ========')
         for run in range(n_runs):
@@ -491,9 +494,9 @@ def run_parallel_experiments(n_runs, params, n_cpus):
     n_cpus: int
         Number of avalilable cpus.
     """
-    algorithms = ['pso']
-    benchmark_funcs = params['function']
-
+    algorithms = ['hgapso']
+    benchmark_funcs = []#params['function']
+    
     # Indices for clustering evalutation
     indices_clust_eval = ['fuku_sugeno']
     datasets = params['clustering'].keys()
@@ -579,5 +582,5 @@ def run_all_experiments(n_runs, params):
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
-    run_all_experiments(5, params)
-    #run_parallel_experiments(5, params, mp.cpu_count()-3)
+    #run_all_experiments(5, params)
+    run_parallel_experiments(5, params, mp.cpu_count())
