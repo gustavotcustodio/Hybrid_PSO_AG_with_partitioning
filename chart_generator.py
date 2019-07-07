@@ -24,14 +24,21 @@ def load_results(alg, func_eval, dataset=None):
         file_name = 'results_{}_{}.csv'.format(alg, func_eval)
     else:
         file_name = 'results_{}_{}_{}.csv'.format(alg, func_eval, dataset)
-    full_file_name = os.path.join('exp_results_backup', file_name)
+    full_file_name = os.path.join('exp_results_out', file_name)
     return pd.read_csv(full_file_name, delimiter=',')
 
 
-def plot_results_chart(df_fitness):
-    #df_fitness.max()
+def plot_results_chart(df_fitness, func_eval, file_name):
     tex_chart = open('model_tex_chart.tex').read()
-    #text_chart.format()
+    min_val = df_fitness.values.min()
+    max_val = df_fitness.values.max()
+    func_eval = func_eval.replace('_','-').capitalize()
+
+    output = tex_chart.format(func_eval, min_val, max_val, file_name)
+    output_file = open(os.path.join('graphs', file_name+'.tex'), 'w')
+    
+    output_file.write(output)
+    output_file.close()
 
 
 def save_dat_file(dict_fitness, func_eval, dataset=None):
@@ -39,8 +46,11 @@ def save_dat_file(dict_fitness, func_eval, dataset=None):
         file_name = '{}_{}.dat'.format(func_eval, dataset)
     else:
         file_name = '{}.dat'.format(func_eval)
-    full_save_path = os.path.join('dat_files', file_name)
-    pd.DataFrame(dict_fitness).to_csv(full_save_path, sep=',')
+
+    full_save_path = os.path.join('graphs', 'dat_files')
+    full_save_path = os.path.join(full_save_path, file_name)
+    
+    pd.DataFrame(dict_fitness).to_csv(full_save_path, sep=',', index=False)
 
 
 def save_fitness_values(df_results):
@@ -63,9 +73,23 @@ def save_fitness_values(df_results):
     
 
 if __name__=='__main__':
-    df_results = load_results('logapso', 'davies_bouldin', 'iris')
+    eval_func = 'xie_beni' 
+    dataset = 'diabetes'
+
+    df_logapso = load_results('logapso', eval_func, dataset)
+    #df_hgapso = load_results('hgapso', eval_func, dataset)
+    df_pso = load_results('pso', eval_func, dataset)
     
-    best_result = get_best_result(df_results)
-    average_fitness = get_average_fitness(best_result, 5)
-    save_dat_file({'logapso':average_fitness}, 'davies_bouldin', 'iris')
-    #save_dat_file()
+    best_logapso = get_best_result(df_logapso)
+    average_logapso = list(get_average_fitness(best_logapso, 5))
+    #best_hgapso = get_best_result(df_hgapso)
+    #average_hgapso = list(get_average_fitness(best_hgapso, 5))
+    best_pso = get_best_result(df_pso)
+    average_pso = list(get_average_fitness(best_pso, 5))
+
+    dict_fitness = {'logapso':average_logapso, 'pso':average_pso}#'hgapso':average_hgapso,
+
+    save_dat_file(dict_fitness, eval_func, dataset)
+
+    print(plot_results_chart(pd.DataFrame(dict_fitness), 
+                       eval_func, eval_func + '_' + dataset))
