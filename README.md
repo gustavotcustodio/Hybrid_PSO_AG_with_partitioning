@@ -22,7 +22,7 @@ This method has a group of particles updating their solutions similarly to a cla
 
 The algorithm is detailed in the figure below:
 
-![](flow_chart_proposal.pdf)
+![](flow_chart_proposal.png)
 
 Below is provided a description of each variable:
 * _x_ <sub>_i_</sub> : position of particle _i_.
