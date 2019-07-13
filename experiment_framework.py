@@ -491,8 +491,8 @@ def run_parallel_experiments(n_runs, params, n_cpus):
     n_cpus: int
         Number of avalilable cpus.
     """
-    algorithms = ['pso']
-    benchmark_funcs = params['function']
+    algorithms = ['hgapso', 'logapso']
+    benchmark_funcs = []#params['function']
 
     # Indices for clustering evalutation
     indices_clust_eval = ['fuku_sugeno']
@@ -512,7 +512,7 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                                   cl, n_runs, dataset,))
                     )
 
-                if alg == 'hgapso':
+                elif alg == 'hgapso':
                     processes.append(
                         mp.Process(
                             target=run_cluster_hgapso_experiments,
@@ -520,14 +520,22 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                                   params['clustering'][dataset], cl, n_runs,
                                   dataset,))
                     )
-        for func in benchmark_funcs:
-            if alg == 'hgapso':
-                processes.append(
-                    mp.Process(target=run_hgapso_experiments,
-                               args=(params['pso'], params['ga'],
-                                     func, n_runs,))
-                )
-        run_processes(processes, n_cpus)
+                elif alg == 'logapso':
+                    processes.append(
+                        mp.Process(
+                            target=run_cluster_logapso_experiments,
+                            args=(params['pso'], params['ga'], params['logapso'],
+                                  params['clustering'][dataset], cl, n_runs,
+                                  dataset,))
+                    )
+        #for func in benchmark_funcs:
+        #    if alg == 'hgapso':
+        #        processes.append(
+        #            mp.Process(target=run_hgapso_experiments,
+        #                       args=(params['pso'], params['ga'],
+        #                             func, n_runs,))
+        #        )
+    run_processes(processes, n_cpus)
 
 
 def run_all_experiments(n_runs, params):
@@ -579,5 +587,5 @@ def run_all_experiments(n_runs, params):
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
-    run_all_experiments(5, params)
-    #run_parallel_experiments(5, params, mp.cpu_count()-3)
+    #run_all_experiments(5, params)
+    run_parallel_experiments(5, params, mp.cpu_count()-1)
