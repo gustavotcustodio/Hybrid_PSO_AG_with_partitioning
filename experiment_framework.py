@@ -492,7 +492,7 @@ def run_parallel_experiments(n_runs, params, n_cpus):
         Number of avalilable cpus.
     """
     algorithms = ['hgapso', 'logapso']
-    benchmark_funcs = []#params['function']
+    benchmark_funcs = params['function']
 
     # Indices for clustering evalutation
     indices_clust_eval = ['fuku_sugeno']
@@ -528,13 +528,25 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                                   params['clustering'][dataset], cl, n_runs,
                                   dataset,))
                     )
-        #for func in benchmark_funcs:
-        #    if alg == 'hgapso':
-        #        processes.append(
-        #            mp.Process(target=run_hgapso_experiments,
-        #                       args=(params['pso'], params['ga'],
-        #                             func, n_runs,))
-        #        )
+        for func in benchmark_funcs:
+            if alg == 'pso':
+                processes.append(
+                    mp.Process(target=run_pso_experiments,
+                               args=(params['pso'],
+                                     func, n_runs,))
+                )
+	    elif alg == 'hgapso':
+                processes.append(
+                    mp.Process(target=run_hgapso_experiments,
+                               args=(params['pso'], params['ga'],
+                                     func, n_runs,)
+                )
+	    elif alg == 'logapso':
+                processes.append(
+                    mp.Process(target=run_logapso_experiments,
+                               args=(params['pso'], params['ga'],
+                                     params['logapso'], func, n_runs,))
+                )
     run_processes(processes, n_cpus)
 
 

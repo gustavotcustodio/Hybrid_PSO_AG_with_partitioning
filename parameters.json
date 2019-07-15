@@ -31,6 +31,8 @@
     },
     "function":
     [ 
+        "square_sum", "rosenbrock", "schwefel_222", "quartic_noise",
+        "rastrigin", "griewank", "ackley", "schwefel_226", 
         "penalty_1", "penalty_2"
     ],
     "clustering":
