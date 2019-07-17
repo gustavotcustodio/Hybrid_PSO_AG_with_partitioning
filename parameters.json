@@ -37,6 +37,11 @@
     ],
     "clustering":
     {
+        "iris":
+        {
+            "n_clusters":[3, 9, 15],
+            "n_attrib": 4
+        },
         "ionosphere":
         {
             "n_clusters":[2, 6, 10],
