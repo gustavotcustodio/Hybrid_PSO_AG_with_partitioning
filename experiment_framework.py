@@ -123,7 +123,7 @@ def get_checkpoint(params, dataset):
     elif dataset == 'iris':
         return params[0:], 0
     elif dataset == 'wdbc':
-        return params[0:], 0
+        return params[182:], 182
     else: # wine
         return params[118:], 118
 
