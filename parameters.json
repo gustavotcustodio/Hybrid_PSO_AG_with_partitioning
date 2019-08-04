@@ -37,21 +37,6 @@
     ],
     "clustering":
     {
-        "ionosphere":
-        {
-            "n_clusters":[2, 6, 10],
-            "n_attrib": 33
-        },
-        "wine":
-        {
-            "n_clusters":[3, 9, 15],
-            "n_attrib": 13
-        },
-        "diabetes":
-        {
-            "n_clusters":[2, 6, 10],
-            "n_attrib": 8
-        },
         "wdbc":
         {
             "n_clusters":[2, 6, 10],

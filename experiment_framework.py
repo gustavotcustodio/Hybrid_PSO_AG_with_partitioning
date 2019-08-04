@@ -117,15 +117,15 @@ def merge_and_clean_params(lists_of_params_dicts, algorithm):
 
 def get_checkpoint(params, dataset):
     if dataset == 'diabetes':
-        return params[272:], 272
+        return params[89:], 89
     elif dataset == 'ionosphere':
-        return params[368:], 368
+        return params[93:], 93
     elif dataset == 'iris':
-        return params[378:], 378
+        return params[0:], 0
     elif dataset == 'wdbc':
-        return params[238:], 238
+        return params[182:], 182
     else: # wine
-        return params[331:], 331
+        return params[118:], 118
 
 
 def run_experiment(algorithm, parameters, func_name, n_runs,
@@ -169,7 +169,7 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
     n_params = len(grid_params)
     index_params = 1
 
-    #grid_params, index_params = get_checkpoint(grid_params, dataset_name)
+    grid_params, index_params = get_checkpoint(grid_params, dataset_name)
 
     for p in grid_params:        
         print(f'======== Parameters {index_params} of {n_params} ========')
@@ -492,7 +492,7 @@ def run_parallel_experiments(n_runs, params, n_cpus):
         Number of avalilable cpus.
     """
     algorithms = ['hgapso', 'logapso']
-    benchmark_funcs = params['function']
+    benchmark_funcs = []#params['function']
 
     # Indices for clustering evalutation
     indices_clust_eval = ['fuku_sugeno']
@@ -511,14 +511,13 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                             args=(params['pso'], params['clustering'][dataset],
                                   cl, n_runs, dataset,))
                     )
-
-                elif alg == 'hgapso':
+                elif alg == 'hgapso' and dataset == 'iris':
                     processes.append(
                         mp.Process(
                             target=run_cluster_hgapso_experiments,
                             args=(params['pso'], params['ga'],
-                                  params['clustering'][dataset], cl, n_runs,
-                                  dataset,))
+                                params['clustering'][dataset], cl, n_runs,
+                                dataset,))
                     )
                 elif alg == 'logapso':
                     processes.append(
@@ -528,25 +527,25 @@ def run_parallel_experiments(n_runs, params, n_cpus):
                                   params['clustering'][dataset], cl, n_runs,
                                   dataset,))
                     )
-        for func in benchmark_funcs:
-            if alg == 'pso':
-                processes.append(
-                    mp.Process(target=run_pso_experiments,
-                               args=(params['pso'],
-                                     func, n_runs,))
-                )
-	    elif alg == 'hgapso':
-                processes.append(
-                    mp.Process(target=run_hgapso_experiments,
-                               args=(params['pso'], params['ga'],
-                                     func, n_runs,)
-                )
-	    elif alg == 'logapso':
-                processes.append(
-                    mp.Process(target=run_logapso_experiments,
-                               args=(params['pso'], params['ga'],
-                                     params['logapso'], func, n_runs,))
-                )
+        # for func in benchmark_funcs:
+        #     if alg == 'pso':
+        #         processes.append(
+        #             mp.Process(target=run_pso_experiments,
+        #                        args=(params['pso'],
+        #                              func, n_runs,))
+        #         )
+        #     elif alg == 'hgapso':
+        #         processes.append(
+        #             mp.Process(target=run_hgapso_experiments,
+        #                         args=(params['pso'], params['ga'],
+        #                               func, n_runs,)
+        #          )
+        #     elif alg == 'logapso':
+        #          processes.append(
+        #              mp.Process(target=run_logapso_experiments,
+        #                         args=(params['pso'], params['ga'],
+        #                               params['logapso'], func, n_runs,))
+        #          )
     run_processes(processes, n_cpus)
 
 
@@ -562,7 +561,7 @@ def run_all_experiments(n_runs, params):
     params: dict
         Dictionary containing the parameters for the experiments.
     """
-    algorithms = ['pso','hgapso', 'logapso']
+    algorithms = ['logapso', 'hgapso']
     benchmark_funcs = params['function']
 
     # Indices for clustering evalutation
