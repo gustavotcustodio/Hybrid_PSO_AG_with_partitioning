@@ -1,9 +1,17 @@
 import pandas as pd
 import os
+import numpy as np
 import json
 
-def get_best_result(df_results):
-    index_best = df_results['fitness'].idxmin()
+def get_best_result(df_results, n_dims):
+    if 'particle_size' in df_results.columns:
+        index_best = df_results.loc[
+                        df_results['particle_size']==n_dims,
+                        'fitness'].idxmin()
+    else:
+        index_best = df_results.loc[
+                        df_results['n_clusters']==n_dims, 
+                        'fitness'].idxmin()
     df_duplicates = df_results.drop(['fitness', 'run'], axis=1)
     best_row = df_duplicates.iloc[index_best]
 
@@ -24,8 +32,12 @@ def load_results(alg, func_eval, dataset=None):
         file_name = 'results_{}_{}.csv'.format(alg, func_eval)
     else:
         file_name = 'results_{}_{}_{}.csv'.format(alg, func_eval, dataset)
-    full_file_name = os.path.join('exp_results_out', file_name)
-    return pd.read_csv(full_file_name, delimiter=',')
+    full_file_name = os.path.join('exp_tests', file_name)   
+    try:
+        df_results = pd.read_csv(full_file_name, delimiter=',')
+    except:
+        return None
+    return df_results
 
 
 def plot_results_chart(df_fitness, func_eval, file_name):
@@ -53,43 +65,37 @@ def save_dat_file(dict_fitness, func_eval, dataset=None):
     pd.DataFrame(dict_fitness).to_csv(full_save_path, sep=',', index=False)
 
 
-def save_fitness_values(df_results):
-    params = json.load('parameters.json')
-    algorithms = ['PSO', 'HGAPSO','LOGAPSO']
+def analyze_results():
+    params = json.load(open('parameters.json'))
+    algorithms = ['pso', 'hgapso','logapso']
     datasets = params['clustering'].keys()
-    clustering_eval = ['xie_beni', 'daviels_bouldin']
-    benchmark_funcs = params['clustering']
+    clustering_eval = ['xie_beni', 'fuku_sugeno']
+    benchmark_funcs = params['function']
     
-    for cl_eval in clustering_eval:
-        for dataset in datasets:
+    #for cl_eval in clustering_eval:
+    #    for dataset in datasets:
+    #        dict_fitness = {}
+    #        for alg in algorithms:
+    #            df_results = load_results(alg, cl_eval, dataset)
+                #get_best_result(df_results, n_dims)
+                #mean_fitness_vals = get_average_fitness(df_results, 5)
+                #dict_fitness.update({alg: mean_fitness_vals})
+                #save_dat_file(dict_fitness, cl_eval, dataset)
+
+    particle_sizes = params['pso']['particle_size']
+    for b in benchmark_funcs:
+       
+        list_df_results = [load_results(alg, b) for alg in algorithms]
+        for n_dims in particle_sizes: 
             dict_fitness = {}
-            for alg in algorithms:
-                df_results = load_results(alg, cl_eval, dataset)
-                mean_fitness_vals = get_average_fitness(df_results, 5)
-                dict_fitness.update({alg: mean_fitness_vals})
-
-        #for b in benchmark_funcs:
-        #    load_results(alg, )
-    
-
+            for alg, df_results in zip(algorithms, list_df_results):
+                if df_results is not None:
+                    best_values = get_best_result(df_results, n_dims)
+                    average_values = get_average_fitness(best_values, n_runs=5)
+                    dict_fitness.update({alg: average_values})
+            save_dat_file(dict_fitness, b)
+                
 if __name__=='__main__':
-    eval_func = 'xie_beni' 
-    dataset = 'diabetes'
-
-    df_logapso = load_results('logapso', eval_func, dataset)
-    #df_hgapso = load_results('hgapso', eval_func, dataset)
-    df_pso = load_results('pso', eval_func, dataset)
-    
-    best_logapso = get_best_result(df_logapso)
-    average_logapso = list(get_average_fitness(best_logapso, 5))
-    #best_hgapso = get_best_result(df_hgapso)
-    #average_hgapso = list(get_average_fitness(best_hgapso, 5))
-    best_pso = get_best_result(df_pso)
-    average_pso = list(get_average_fitness(best_pso, 5))
-
-    dict_fitness = {'logapso':average_logapso, 'pso':average_pso}#'hgapso':average_hgapso,
-
-    save_dat_file(dict_fitness, eval_func, dataset)
-
-    print(plot_results_chart(pd.DataFrame(dict_fitness), 
-                       eval_func, eval_func + '_' + dataset))
+    analyze_results()
+    #print(plot_results_chart(pd.DataFrame(dict_fitness), 
+    #                   eval_func, eval_func + '_' + dataset))
