@@ -1,0 +1,38 @@
+\documentclass{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.9,every x tick label/.append style={font=\Large},every y tick label/.append style={font=\Large},legend style={cells={anchor=west}}}
+
+\begin{document}
+    \begin{tikzpicture}
+        \begin{axis}
+            [   no markers,
+                xlabel={\Large Iterations},
+                ylabel={\Large Fitness (Penalty-1)},
+                ymin=nan, ymax=nan,
+                legend pos=outer north east,
+                ymajorgrids=true,
+                xmajorgrids=true,
+                xminorgrids=true,
+                grid style=dashed,
+                minor tick num=1,
+                legend style={font=\Large, 
+                legend columns=2,
+                at={(0.5,-0.33)},
+                anchor=north}
+            ]
+           
+            \addplot+[solid, thick, brown] table [ x expr = \lineno,y = logapso,col sep=comma] {dat_files/penalty_1_500.dat}; %xie_beni_iris
+            \addlegendentry{PSO} %variavel
+        
+            %\addplot+[solid, thick, blue] table [ x expr = \lineno,y = hgapso,col sep=comma] {dat_files/penalty_1_500.dat};
+            %\addlegendentry{HGAPSO} %variavel
+         
+            \addplot+[solid, thick, red] table [ x expr = \lineno,y = pso,col sep=comma] {dat_files/penalty_1_500.dat};
+            \addlegendentry{LOGAPSO} %variavel
+        \end{axis}
+    \end{tikzpicture}
+
+\end{document}

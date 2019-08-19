@@ -53,15 +53,16 @@ def plot_results_chart(df_fitness, func_eval, file_name):
     output_file.close()
 
 
-def save_dat_file(dict_fitness, func_eval, dataset=None):
+def create_file_name(dict_fitness, func_eval, n_dims, dataset=None):
     if dataset is not None:
-        file_name = '{}_{}.dat'.format(func_eval, dataset)
+        file_name = '{}_{}_{}'.format(func_eval, dataset, n_dims)
     else:
-        file_name = '{}.dat'.format(func_eval)
+        file_name = '{}_{}'.format(func_eval, n_dims)
+    return file_name
 
-    full_save_path = os.path.join('graphs', 'dat_files')
-    full_save_path = os.path.join(full_save_path, file_name)
-    
+
+def save_dat_file(dict_fitness, file_name):
+    full_save_path = os.path.join('graphs', 'dat_files', file_name+'.dat')
     pd.DataFrame(dict_fitness).to_csv(full_save_path, sep=',', index=False)
 
 
@@ -72,19 +73,27 @@ def analyze_results():
     clustering_eval = ['xie_beni', 'fuku_sugeno']
     benchmark_funcs = params['function']
     
-    #for cl_eval in clustering_eval:
-    #    for dataset in datasets:
-    #        dict_fitness = {}
-    #        for alg in algorithms:
-    #            df_results = load_results(alg, cl_eval, dataset)
-                #get_best_result(df_results, n_dims)
-                #mean_fitness_vals = get_average_fitness(df_results, 5)
-                #dict_fitness.update({alg: mean_fitness_vals})
-                #save_dat_file(dict_fitness, cl_eval, dataset)
+    for d in datasets:
+        clusters_values = params['clustering'][d]['n_clusters']
+        for clust in clustering_eval: 
+            list_df_results = [load_results(alg, clust, d)
+                               for alg in algorithms]
+            for n_clusters in clusters_values:
+                dict_fitness = {}
+                for alg, df_results in zip(algorithms, list_df_results):
+                    if df_results is not None:
+                        best_values = get_best_result(df_results, n_clusters)
+                        average_values = get_average_fitness(
+                                            best_values, n_runs=5)
+                        dict_fitness.update({alg: average_values})
+                file_name = create_file_name(
+                            dict_fitness, clust, n_clusters, dataset=d)
+                save_dat_file(dict_fitness, file_name) 
+                plot_results_chart( pd.DataFrame(dict_fitness), 
+                                    clust, file_name)
 
     particle_sizes = params['pso']['particle_size']
     for b in benchmark_funcs:
-       
         list_df_results = [load_results(alg, b) for alg in algorithms]
         for n_dims in particle_sizes: 
             dict_fitness = {}
@@ -93,7 +102,11 @@ def analyze_results():
                     best_values = get_best_result(df_results, n_dims)
                     average_values = get_average_fitness(best_values, n_runs=5)
                     dict_fitness.update({alg: average_values})
-            save_dat_file(dict_fitness, b)
+                file_name = create_file_name(
+                            dict_fitness, b, n_dims)
+                save_dat_file(dict_fitness, file_name) 
+                plot_results_chart( pd.DataFrame(dict_fitness), 
+                                    b, file_name)
                 
 if __name__=='__main__':
     analyze_results()
